@@ -1,0 +1,17 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Quiz - Reforço em Jogo</title><link rel="stylesheet" href="css/style.css"></head><body>
+<main>
+  <section id="jogo">
+    <div style="display:flex;justify-content:space-between;font-weight:800"><span id="contador"></span></div>
+    <div class="progresso"><div id="barra"></div></div>
+    <p id="pergunta" class="card" style="font-size:20px;font-weight:800;line-height:1.4">Carregando...</p>
+    <div id="opcoes"></div>
+    <p id="erro" class="erro" role="alert"></p>
+    <button id="proxima" class="btn" type="button" hidden>Próxima questão</button>
+  </section>
+  <section id="fim" hidden>
+    <h1>Fim do jogo!</h1>
+    <p id="resultado" class="card" style="font-size:22px;font-weight:800"></p>
+    <a class="btn outline" href="entrar.html">Entrar em outra sessão</a>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="js/config.js"></script><script src="js/app.js"></script><script src="js/quiz.js"></script></body></html>

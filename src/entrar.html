@@ -1,0 +1,15 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Entrar na sessão - Reforço em Jogo</title><link rel="stylesheet" href="css/style.css"></head><body>
+<main>
+  <h1>Vamos jogar?</h1>
+  <p class="muted">Peça o código da sessão para a sua professora.</p>
+  <form id="form">
+    <label for="codigo">Código da sessão</label>
+    <input id="codigo" autocomplete="off" required style="font-size:22px;font-weight:800;letter-spacing:2px;text-transform:uppercase">
+    <label for="nome">Seu primeiro nome ou apelido</label>
+    <input id="nome" maxlength="30" autocomplete="off" required>
+    <p class="card muted">Sem e-mail e sem senha. Seu nome aparece só para a professora.</p>
+    <p id="erro" class="erro" role="alert"></p>
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="js/config.js"></script><script src="js/app.js"></script><script src="js/entrar.js"></script></body></html>
