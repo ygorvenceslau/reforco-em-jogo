@@ -3,7 +3,7 @@
 Marque `[x]` ao concluir. Ponto de decisão: **sábado à noite**. Se o Nível 2 não estiver pronto, entreguem o Nível 1 funcionando, o protótipo e a lista do que ficou para a próxima etapa.
 
 ## Quarta, 28 (hoje à noite) — todos
-- [ ] Criar o repositório no GitHub e convidar os três.
+- [x] Criar o repositório no GitHub e convidar os três.
 - [ ] Criar o projeto no Supabase, rodar `schema.sql` e `seed.sql`.
 - [ ] Criar a conta da professora e a linha em `professor`.
 - [ ] Preencher `src/js/config.js` e rodar o site no computador.
