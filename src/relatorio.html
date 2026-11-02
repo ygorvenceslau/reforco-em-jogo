@@ -1,9 +1,29 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Relatório - Reforço em Jogo</title><link rel="stylesheet" href="css/style.css"></head><body>
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Relatório - Reforço em Jogo</title><link rel="stylesheet" href="css/style.css"></head><body>
 <main class="largo">
   <a href="painel.html">‹ Painel</a>
   <h1>Relatório da sessão</h1>
   <p id="info" class="muted"></p>
-  <div class="card"><h2>Acertos por assunto</h2><p class="muted">TODO (Pessoa 3). Veja js/relatorio.js.</p><div id="assuntos"></div></div>
-  <div class="card"><h2>Por aluno</h2><div id="alunos"></div></div>
+  <p id="erro" class="erro" role="alert"></p>
+
+  <div id="resumo" class="stats"></div>
+
+  <div class="card">
+    <h2>Acertos por assunto</h2>
+    <div id="assuntos"><p class="muted">Carregando...</p></div>
+  </div>
+
+  <div class="card">
+    <h2>Por aluno</h2>
+    <div style="overflow-x:auto">
+      <table>
+        <thead><tr><th>Aluno</th><th>Respondidas</th><th>Acertos</th><th>%</th><th>Situação</th></tr></thead>
+        <tbody id="alunos"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <button class="btn outline" id="atualizar" type="button">Atualizar agora</button>
+  <p class="muted">A página atualiza sozinha a cada 15 segundos.</p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="js/config.js"></script><script src="js/app.js"></script><script src="js/relatorio.js"></script></body></html>
