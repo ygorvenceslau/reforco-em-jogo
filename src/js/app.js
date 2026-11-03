@@ -1,4 +1,7 @@
 // Código compartilhado por todas as páginas.
+if (CONFIG.SUPABASE_URL.includes("SEU-PROJETO")) {
+  alert("Configure o Supabase em src/js/config.js antes de usar o site.");
+}
 const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
 const $ = (id) => document.getElementById(id);
@@ -27,4 +30,8 @@ async function sair() {
 function participanteAtual() {
   const bruto = sessionStorage.getItem("participante");
   return bruto ? JSON.parse(bruto) : null;
+}
+
+function formatarData(iso) {
+  return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
