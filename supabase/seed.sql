@@ -1,5 +1,34 @@
 -- Conteúdo inicial: Língua Portuguesa, 5º ano (12 questões). A professora deve revisar antes de usar com alunos.
 -- Pode rodar de novo sem duplicar: só insere o que ainda não existe.
+
+-- 1) Limpeza: se o seed antigo foi rodado mais de uma vez, junta as habilidades e questões repetidas.
+do $$
+begin
+  -- Habilidades repetidas: aponta tudo para a de menor id e apaga as outras.
+  create temp table hab_dup on commit drop as
+    select h.id as velho, k.id as novo
+    from habilidade h
+    join (select disciplina, serie, nome, min(id) as id from habilidade group by 1, 2, 3) k
+      on k.disciplina = h.disciplina and k.serie = h.serie and k.nome = h.nome
+    where h.id <> k.id;
+  update questao q set habilidade_id = d.novo from hab_dup d where q.habilidade_id = d.velho;
+  update sessao s set habilidade_id = d.novo from hab_dup d where s.habilidade_id = d.velho;
+  delete from habilidade h using hab_dup d where h.id = d.velho;
+
+  -- Questões repetidas que ninguém respondeu ainda: apaga, mantendo a de menor id.
+  delete from questao q
+  using questao k
+  where k.habilidade_id = q.habilidade_id and k.enunciado = q.enunciado and k.alt_a = q.alt_a
+    and k.id < q.id
+    and not exists (select 1 from resposta r where r.questao_id = q.id);
+
+  -- Impede habilidades repetidas daqui para frente.
+  if not exists (select 1 from pg_constraint where conname = 'habilidade_unica') then
+    alter table habilidade add constraint habilidade_unica unique (disciplina, serie, nome);
+  end if;
+end $$;
+
+-- 2) Conteúdo
 insert into habilidade (disciplina, serie, nome)
 select v.* from (values
   ('Língua Portuguesa', '5º ano', 'Interpretação de texto'),
