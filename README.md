@@ -7,8 +7,9 @@ Plataforma web de jogos educativos para reforço escolar, feita como projeto int
 ## O que já vem pronto
 - Banco completo (`supabase/schema.sql`) com regras de segurança, funções do aluno e views de relatório.
 - 12 questões de Português do 5º ano (`supabase/seed.sql`), para a professora revisar.
-- Funcionando: login da professora, entrada do aluno por código e quiz completo.
-- Para fazer: criar sessão (`painel`) e relatório (`relatorio`).
+- Funcionando: login da professora, painel (criar sessão, ver código/link, listar, encerrar e reabrir), entrada do aluno por código, quiz e relatório (por aluno e por assunto, com marcação "Reforçar").
+- `supabase/demo.sql`: alunos fictícios para a demonstração. `supabase/atualizacao-01.sql`: só para quem rodou o `schema.sql` antigo.
+- `docs/`: requisitos e casos de uso, DER e modelo lógico, roteiro da demonstração.
 
 ## Passo a passo (uma pessoa faz, os outros acompanham)
 
@@ -44,14 +45,11 @@ python3 -m http.server 8000
 ```
 Abra http://localhost:8000. (Ou use a extensão Live Server do VS Code na pasta `src`.)
 
-### 4. Testar o fluxo mínimo (Nível 1)
-Crie uma sessão pelo SQL Editor (enquanto a tela do painel não existe):
-```sql
-insert into sessao (professor_id, habilidade_id, disciplina, serie)
-select id, null, 'Língua Portuguesa', '5º ano' from professor limit 1
-returning codigo;
-```
-Abra `entrar.html`, use o código retornado e jogue. Confira as linhas em `resposta` no Supabase.
+### 4. Testar o fluxo completo
+1. Entre como professora (`login.html`) e crie uma sessão no painel.
+2. Em outro aparelho (ou aba anônima), abra o link da sessão, digite um nome e jogue.
+3. Volte ao painel, abra o **Relatório** e clique em **Atualizar**.
+4. Para ter uma turma de exemplo, rode `supabase/demo.sql` no SQL Editor (usa a sessão mais recente).
 
 ### 5. Publicar online
 No Netlify: **Add new site > Import from GitHub**, escolha o repositório. O `netlify.toml` já aponta a pasta `src`. Cada `git push` na `main` publica de novo.

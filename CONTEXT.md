@@ -38,5 +38,5 @@ Site de jogos educativos para **reforço escolar dentro da aula**. Problema leva
 - Não commitar a chave `service_role` nem senhas.
 
 ## Estado atual
-Pronto: banco, seed, login, entrada do aluno, quiz.
-Falta: `painel` (criar sessão), `relatorio`, acabamento visual, publicação online e teste em celulares reais.
+Pronto: banco, seed, login, entrada do aluno, quiz, painel (criar, listar, encerrar/reabrir sessão), relatório (por aluno e por assunto, com "Reforçar"), mensagens de erro, dados de demonstração e documentação em `docs/`.
+Falta (feito por pessoas, fora do código): criar o projeto no Supabase, publicar no Netlify, revisar as questões com a professora, wireframes/mockups, teste em celulares reais e ensaio da demonstração.

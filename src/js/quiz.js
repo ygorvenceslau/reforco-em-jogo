@@ -8,8 +8,12 @@ let respondeu = false;
 
 async function iniciar() {
   const { data, error } = await sb.rpc("buscar_questoes", { p_participante: aluno.participante_id });
-  if (error || !data || data.length === 0) {
-    $("pergunta").textContent = "Não há questões nesta sessão.";
+  if (error) {
+    $("pergunta").textContent = "Não deu para carregar as questões. Recarregue a página.";
+    return;
+  }
+  if (!data || data.length === 0) {
+    $("pergunta").textContent = "Não há questões nesta sessão. Avise a professora.";
     return;
   }
   questoes = data;
@@ -27,6 +31,7 @@ function mostrar() {
   caixa.innerHTML = "";
   ["A", "B", "C", "D"].forEach((letra) => {
     const b = document.createElement("button");
+    b.type = "button";
     b.className = "opcao";
     b.textContent = q["alt_" + letra.toLowerCase()];
     b.onclick = () => responder(letra, b);
@@ -44,7 +49,9 @@ async function responder(letra, botao) {
   });
   if (error) {
     respondeu = false;
-    mostrarErro("Não deu para enviar a resposta. Tente de novo.");
+    mostrarErro((error.message || "").includes("encerrada")
+      ? "A professora encerrou esta sessão."
+      : "Não deu para enviar a resposta. Tente de novo.");
     return;
   }
   mostrarErro("");
@@ -62,6 +69,11 @@ $("proxima").addEventListener("click", () => {
     $("jogo").hidden = true;
     $("fim").hidden = false;
     $("resultado").textContent = "Você acertou " + acertos + " de " + questoes.length + ".";
+    const p = acertos / questoes.length;
+    $("mensagem").textContent = p === 1 ? "Perfeito! Você acertou tudo!"
+      : p >= 0.6 ? "Muito bem! Continue assim."
+      : "Bom esforço! Vamos treinar mais um pouco.";
+    sessionStorage.removeItem("participante");
   }
 });
 

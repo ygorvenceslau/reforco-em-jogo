@@ -99,9 +99,15 @@ declare
   v_sessao sessao%rowtype;
   v_id uuid;
 begin
-  select * into v_sessao from sessao where codigo = upper(trim(p_codigo)) and ativa;
+  if char_length(trim(coalesce(p_nome, ''))) not between 1 and 30 then
+    raise exception 'Nome inválido';
+  end if;
+  select * into v_sessao from sessao where codigo = upper(trim(p_codigo));
   if not found then
     raise exception 'Código de sessão não encontrado';
+  end if;
+  if not v_sessao.ativa then
+    raise exception 'Sessão encerrada';
   end if;
   insert into participante (sessao_id, nome)
   values (v_sessao.id, trim(p_nome)) returning id into v_id;
@@ -136,6 +142,10 @@ begin
   end if;
   if not exists (select 1 from participante where id = p_participante) then
     raise exception 'Participante inexistente';
+  end if;
+  if not exists (select 1 from participante p join sessao s on s.id = p.sessao_id
+                 where p.id = p_participante and s.ativa) then
+    raise exception 'Sessão encerrada';
   end if;
   v_ok := (upper(p_escolhida) = v_correta);
   insert into resposta (participante_id, questao_id, escolhida, correta)

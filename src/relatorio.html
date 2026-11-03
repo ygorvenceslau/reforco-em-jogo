@@ -2,8 +2,17 @@
 <main class="largo">
   <a href="painel.html">‹ Painel</a>
   <h1>Relatório da sessão</h1>
-  <p id="info" class="muted"></p>
-  <div class="card"><h2>Acertos por assunto</h2><p class="muted">TODO (Pessoa 3). Veja js/relatorio.js.</p><div id="assuntos"></div></div>
-  <div class="card"><h2>Por aluno</h2><div id="alunos"></div></div>
+  <p id="info" class="muted">Carregando...</p>
+  <p id="erro" class="erro" role="alert"></p>
+  <div class="card">
+    <h2>Acertos por assunto</h2>
+    <p class="muted">“Reforçar” aparece quando a turma acertou menos de 60%.</p>
+    <div id="assuntos"></div>
+  </div>
+  <div class="card">
+    <h2>Por aluno</h2>
+    <div id="alunos"></div>
+  </div>
+  <button class="btn outline" id="atualizar" type="button">Atualizar</button>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="js/config.js"></script><script src="js/app.js"></script><script src="js/relatorio.js"></script></body></html>

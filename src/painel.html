@@ -4,12 +4,22 @@
   <p class="muted">Logada como <span id="quem">...</span></p>
   <div class="card">
     <h2>Criar sessão</h2>
-    <p class="muted">TODO (Pessoa 1): escolher habilidade, gerar código e link. Veja js/painel.js.</p>
     <label for="habilidade">Habilidade</label>
     <select id="habilidade"><option>Carregando...</option></select>
     <button class="btn" id="gerar" type="button">Gerar link da sessão</button>
     <p id="erro" class="erro" role="alert"></p>
-    <p id="resultado"></p>
+    <div id="resultado" hidden>
+      <p class="muted">Código para os alunos:</p>
+      <p id="codigo" class="codigo"></p>
+      <p class="muted">Link direto:</p>
+      <p><a id="link" class="quebra" target="_blank" rel="noopener"></a></p>
+      <button class="btn outline" id="copiar" type="button">Copiar link</button>
+      <a class="btn outline" id="ver-relatorio" style="margin-top:10px">Ver relatório</a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Minhas sessões</h2>
+    <div id="sessoes"><p class="muted">Carregando...</p></div>
   </div>
   <button class="btn outline" id="sair" type="button">Sair</button>
 </main>
