@@ -18,6 +18,7 @@
 - **RNF04** RLS ligado em todas as tabelas: cada professora só vê os próprios dados.
 - **RNF05** Dados mínimos do aluno (só primeiro nome ou apelido); sem anúncios e sem rastreadores.
 - **RNF06** Nenhuma chave secreta (`service_role`) no código ou no repositório.
+- **RNF08** Página de privacidade explicando, em linguagem simples, quais dados são guardados e quem os vê.
 - **RNF07** Front-end em HTML, CSS e JavaScript puros, publicado no Netlify; back-end no Supabase.
 
 ## Regras de negócio (RN)
