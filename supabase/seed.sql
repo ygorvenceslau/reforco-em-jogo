@@ -1,43 +1,51 @@
 -- Conteúdo inicial: Língua Portuguesa, 5º ano (12 questões). A professora deve revisar antes de usar com alunos.
-insert into habilidade (disciplina, serie, nome) values
+-- Pode rodar de novo sem duplicar: só insere o que ainda não existe.
+insert into habilidade (disciplina, serie, nome)
+select v.* from (values
   ('Língua Portuguesa', '5º ano', 'Interpretação de texto'),
   ('Língua Portuguesa', '5º ano', 'Classes de palavras'),
-  ('Língua Portuguesa', '5º ano', 'Ortografia');
+  ('Língua Portuguesa', '5º ano', 'Ortografia')) as v(disciplina, serie, nome)
+where not exists (select 1 from habilidade h
+  where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome);
 
-insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta) values
-((select id from habilidade where nome = 'Interpretação de texto'),
+insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta)
+select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta from (values
+('Interpretação de texto',
  'Ana levou o guarda-chuva porque o céu estava cheio de nuvens escuras. Por que Ana levou o guarda-chuva?',
  'Porque o céu indicava que poderia chover', 'Porque queria brincar', 'Porque estava com frio', 'Porque ganhou de presente', 'A'),
-((select id from habilidade where nome = 'Interpretação de texto'),
+('Interpretação de texto',
  'Pedro acordou tarde, correu para a escola e chegou depois do sinal. Qual é o assunto principal do texto?',
  'Pedro chegou atrasado à escola', 'Pedro gosta de correr', 'Pedro perdeu o lanche', 'A escola foi fechada', 'A'),
-((select id from habilidade where nome = 'Interpretação de texto'),
+('Interpretação de texto',
  'Em “Maria ficou radiante com a notícia”, a palavra “radiante” mostra que Maria ficou:',
  'Muito triste', 'Muito feliz', 'Com sono', 'Com medo', 'B'),
-((select id from habilidade where nome = 'Interpretação de texto'),
+('Interpretação de texto',
  'O cachorro de Lia fugiu pelo portão aberto. Lia saiu chamando por ele até encontrá-lo na praça. O que Lia fez depois que o cachorro fugiu?',
  'Foi dormir', 'Procurou o cachorro e o encontrou na praça', 'Ganhou outro cachorro', 'Fechou o portão e esperou', 'B'),
-((select id from habilidade where nome = 'Classes de palavras'),
+('Classes de palavras',
  'Em “Ela comprou frutas frescas”, qual palavra é o adjetivo?',
  'Ela', 'comprou', 'frutas', 'frescas', 'D'),
-((select id from habilidade where nome = 'Classes de palavras'),
+('Classes de palavras',
  'Em “Os alunos leram o livro”, qual palavra é o verbo?',
  'alunos', 'leram', 'livro', 'Os', 'B'),
-((select id from habilidade where nome = 'Classes de palavras'),
+('Classes de palavras',
  'Qual destas palavras é um substantivo?',
  'rapidamente', 'bonito', 'cadeira', 'correr', 'C'),
-((select id from habilidade where nome = 'Classes de palavras'),
+('Classes de palavras',
  'Em “O gato preto dorme no sofá”, qual palavra indica uma característica do gato?',
  'dorme', 'sofá', 'preto', 'no', 'C'),
-((select id from habilidade where nome = 'Ortografia'),
+('Ortografia',
  'Qual palavra está escrita corretamente?',
  'exceção', 'esceção', 'eceção', 'exessão', 'A'),
-((select id from habilidade where nome = 'Ortografia'),
+('Ortografia',
  'Qual palavra completa corretamente a frase: “A ___ chegou cedo hoje.”?',
  'profesora', 'professora', 'proffessora', 'professsora', 'B'),
-((select id from habilidade where nome = 'Ortografia'),
+('Ortografia',
  'Qual palavra está escrita corretamente?',
  'caxorro', 'cachorro', 'cachoro', 'cashorro', 'B'),
-((select id from habilidade where nome = 'Ortografia'),
+('Ortografia',
  'Qual palavra completa a frase: “Ele ___ o dever de casa ontem.”?',
- 'fêz', 'fes', 'fez', 'fés', 'C');
+ 'fêz', 'fes', 'fez', 'fés', 'C')
+) as v(assunto, enunciado, a, b, c, d, correta)
+join habilidade h on h.nome = v.assunto and h.disciplina = 'Língua Portuguesa' and h.serie = '5º ano'
+where not exists (select 1 from questao q where q.enunciado = v.enunciado and q.alt_a = v.a);

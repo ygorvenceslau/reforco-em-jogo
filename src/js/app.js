@@ -1,6 +1,6 @@
 // Código compartilhado por todas as páginas.
 if (CONFIG.SUPABASE_URL.includes("SEU-PROJETO")) {
-  alert("Configure o Supabase em src/js/config.js antes de usar o site.");
+  alert("Configure o Supabase em src/js/config.js antes de usar o site. Veja diagnostico.html.");
 }
 const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 

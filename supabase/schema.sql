@@ -1,20 +1,21 @@
 -- Reforço em Jogo: esquema do banco (PostgreSQL / Supabase)
 -- Como usar: Supabase > SQL Editor > colar este arquivo inteiro > Run. Depois rodar seed.sql.
+-- Pode rodar de novo sem problema: nada é apagado e o que já existe é mantido ou atualizado.
 
-create table professor (
+create table if not exists professor (
   id uuid primary key references auth.users(id) on delete cascade,
   nome text not null,
   escola text
 );
 
-create table habilidade (
+create table if not exists habilidade (
   id serial primary key,
   disciplina text not null,
   serie text not null,
   nome text not null
 );
 
-create table questao (
+create table if not exists questao (
   id serial primary key,
   habilidade_id int not null references habilidade(id),
   enunciado text not null,
@@ -30,7 +31,7 @@ language sql as $$
   select upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
 $$;
 
-create table sessao (
+create table if not exists sessao (
   id uuid primary key default gen_random_uuid(),
   codigo text not null unique default gerar_codigo(),
   professor_id uuid not null references professor(id),
@@ -41,14 +42,14 @@ create table sessao (
   criada_em timestamptz not null default now()
 );
 
-create table participante (
+create table if not exists participante (
   id uuid primary key default gen_random_uuid(),
   sessao_id uuid not null references sessao(id) on delete cascade,
   nome text not null check (char_length(nome) between 1 and 30),
   entrou_em timestamptz not null default now()
 );
 
-create table resposta (
+create table if not exists resposta (
   id serial primary key,
   participante_id uuid not null references participante(id) on delete cascade,
   questao_id int not null references questao(id),
@@ -58,8 +59,8 @@ create table resposta (
   unique (participante_id, questao_id)
 );
 
-create index on participante (sessao_id);
-create index on resposta (participante_id);
+create index if not exists participante_sessao_idx on participante (sessao_id);
+create index if not exists resposta_participante_idx on resposta (participante_id);
 
 -- Segurança (RLS): o aluno NÃO acessa tabelas direto; só chama as funções abaixo.
 alter table professor enable row level security;
@@ -69,23 +70,29 @@ alter table sessao enable row level security;
 alter table participante enable row level security;
 alter table resposta enable row level security;
 
+drop policy if exists "professor ve a si mesmo" on professor;
 create policy "professor ve a si mesmo" on professor
   for select to authenticated using (id = auth.uid());
 
+drop policy if exists "habilidades sao publicas" on habilidade;
 create policy "habilidades sao publicas" on habilidade
   for select to anon, authenticated using (true);
 
+drop policy if exists "professor ve questoes" on questao;
 create policy "professor ve questoes" on questao
   for select to authenticated using (true);
 
+drop policy if exists "professor gerencia suas sessoes" on sessao;
 create policy "professor gerencia suas sessoes" on sessao
   for all to authenticated
   using (professor_id = auth.uid()) with check (professor_id = auth.uid());
 
+drop policy if exists "professor ve participantes das suas sessoes" on participante;
 create policy "professor ve participantes das suas sessoes" on participante
   for select to authenticated
   using (exists (select 1 from sessao s where s.id = sessao_id and s.professor_id = auth.uid()));
 
+drop policy if exists "professor ve respostas das suas sessoes" on resposta;
 create policy "professor ve respostas das suas sessoes" on resposta
   for select to authenticated
   using (exists (
@@ -159,7 +166,7 @@ grant execute on function buscar_questoes(uuid, int) to anon, authenticated;
 grant execute on function responder(uuid, int, text) to anon, authenticated;
 
 -- Relatórios (a professora só enxerga as próprias sessões, por causa do RLS)
-create view v_acertos_por_aluno with (security_invoker = true) as
+create or replace view v_acertos_por_aluno with (security_invoker = true) as
 select p.sessao_id, p.id as participante_id, p.nome,
        count(r.id) as respondidas,
        count(*) filter (where r.correta) as acertos,
@@ -168,7 +175,7 @@ from participante p
 left join resposta r on r.participante_id = p.id
 group by p.sessao_id, p.id, p.nome;
 
-create view v_acertos_por_assunto with (security_invoker = true) as
+create or replace view v_acertos_por_assunto with (security_invoker = true) as
 select p.sessao_id, h.nome as assunto,
        count(r.id) as respondidas,
        count(*) filter (where r.correta) as acertos,
@@ -178,3 +185,11 @@ join participante p on p.id = r.participante_id
 join questao q on q.id = r.questao_id
 join habilidade h on h.id = q.habilidade_id
 group by p.sessao_id, h.nome;
+
+-- Permissões de acesso pela API (o RLS acima continua decidindo quais LINHAS cada um vê).
+-- Explícitas para funcionar mesmo em projetos que não liberam tabelas novas automaticamente.
+grant usage on schema public to anon, authenticated;
+grant select on habilidade to anon, authenticated;
+grant select on professor, questao, participante, resposta to authenticated;
+grant select, insert, update, delete on sessao to authenticated;
+grant select on v_acertos_por_aluno, v_acertos_por_assunto to authenticated;

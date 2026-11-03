@@ -141,6 +141,13 @@ exigirLogin().then(async (sessao) => {
   if (!sessao) return;
   usuario = sessao.user;
   $("quem").textContent = usuario.email;
+  const prof = await sb.from("professor").select("nome").eq("id", usuario.id).maybeSingle();
+  if (!prof.data) {
+    $("gerar").disabled = true;
+    mostrarErro("Sua conta ainda não está cadastrada como professora. Rode supabase/professora.sql no Supabase com o e-mail " + usuario.email + ".");
+  } else {
+    $("quem").textContent = prof.data.nome + " (" + usuario.email + ")";
+  }
   await carregarHabilidades();
   carregarSessoes();
 });
