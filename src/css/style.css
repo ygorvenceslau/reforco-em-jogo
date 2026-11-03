@@ -38,3 +38,10 @@ a{color:var(--teal)}
 .card>h2{margin-bottom:8px}
 @media (max-width:520px){th,td{padding:8px 4px;font-size:15px}.codigo{font-size:32px}}
 .erro:empty{display:none}
+.checagens{list-style:none;margin:0;padding:0}
+.checagens li{padding:10px 0;border-bottom:1px solid var(--line)}
+.checagens li:last-child{border-bottom:0}
+.checagens li p{margin:4px 0 0;color:var(--muted);word-break:break-word}
+.checagens li.ok strong{color:var(--ok)}
+.checagens li.falha strong{color:var(--bad)}
+.checagens li.aviso strong{color:var(--muted)}

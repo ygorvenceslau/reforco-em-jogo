@@ -8,7 +8,8 @@ Plataforma web de jogos educativos para reforço escolar, feita como projeto int
 - Banco completo (`supabase/schema.sql`) com regras de segurança, funções do aluno e views de relatório.
 - 12 questões de Português do 5º ano (`supabase/seed.sql`), para a professora revisar.
 - Funcionando: login da professora, painel (criar sessão, ver código/link, listar, encerrar e reabrir), entrada do aluno por código, quiz e relatório (por aluno e por assunto, com marcação "Reforçar").
-- `supabase/demo.sql`: alunos fictícios para a demonstração. `supabase/atualizacao-01.sql`: só para quem rodou o `schema.sql` antigo.
+- `supabase/professora.sql`: liga a conta de login à tabela `professor`. `supabase/demo.sql`: alunos fictícios para a demonstração.
+- `diagnostico.html`: mostra se o site está ligado ao Supabase e o que falta configurar.
 - `docs/`: requisitos e casos de uso, DER e modelo lógico, roteiro da demonstração.
 
 ## Passo a passo (uma pessoa faz, os outros acompanham)
@@ -28,15 +29,12 @@ Plataforma web de jogos educativos para reforço escolar, feita como projeto int
 4. Cada pessoa trabalha em uma branch (`git checkout -b nome-tarefa`) e abre um Pull Request. Combinem quem revisa.
 
 ### 2. Supabase
-1. Em supabase.com, crie um projeto (região **South America (São Paulo)**) e anote a senha do banco.
-2. **SQL Editor**: cole `supabase/schema.sql`, rode. Depois cole `supabase/seed.sql`, rode.
-3. **Authentication > Users > Add user**: crie a conta da professora (e-mail e senha, marque *Auto Confirm User*).
-4. No SQL Editor, ligue a conta à tabela `professor` (troque o e-mail e o nome):
-   ```sql
-   insert into professor (id, nome, escola)
-   select id, 'Nome da professora', 'Nome da escola' from auth.users where email = 'professora@exemplo.com';
-   ```
-5. **Settings > API**: copie a **Project URL** e a chave **anon/publishable** para `src/js/config.js`. Nunca use a chave `service_role` no site.
+Siga **`docs/configurar-supabase.md`**: passo a passo e tabela com os erros mais comuns. Resumo:
+1. Crie o projeto (região São Paulo).
+2. SQL Editor: rode `supabase/schema.sql` e depois `supabase/seed.sql` (podem ser rodados de novo sem problema).
+3. Authentication > Users > Add user (marque *Auto Confirm User*) e rode `supabase/professora.sql` com o e-mail dela.
+4. Copie a Project URL e a chave anon/publishable para `src/js/config.js`. Nunca a `service_role`.
+5. Abra `diagnostico.html` para conferir.
 
 ### 3. Rodar no computador
 ```bash
