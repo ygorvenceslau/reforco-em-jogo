@@ -2,7 +2,9 @@
 
 Plataforma web de jogos educativos para reforço escolar, feita como projeto integrado (Extensão/PIES I e CTS, UX, Front End e Banco de Dados). A professora cria uma sessão, o aluno entra pelo celular com um código e joga um quiz curto, e a professora vê o relatório por aluno e por assunto.
 
-**Prazo do MVP: terça, 3 de novembro de 2026.** Veja `CONTEXT.md` (decisões e escopo) e `TAREFAS.md` (quem faz o quê).
+**Prazo do MVP: terça, 3 de novembro de 2026.** Veja `CONTEXT.md` (decisões e escopo) e `TAREFAS.md` (quem faz o quê). 
+
+**Site no ar:** https://reforcoemjogo.netlify.app
 
 ## O que já vem pronto
 - Banco completo (`supabase/schema.sql`) com regras de segurança, funções do aluno e views de relatório.
