@@ -1,0 +1,21 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Criar conta - Reforço em Jogo</title><link rel="stylesheet" href="css/style.css"></head><body>
+<main>
+  <h1>Criar conta de professora</h1>
+  <form id="form">
+    <label for="nome">Seu nome</label>
+    <input id="nome" maxlength="80" autocomplete="name" required>
+    <label for="escola">Escola (opcional)</label>
+    <input id="escola" maxlength="80" autocomplete="organization">
+    <label for="email">E-mail</label>
+    <input id="email" type="email" autocomplete="username" required>
+    <label for="senha">Senha (mínimo 6 caracteres)</label>
+    <input id="senha" type="password" minlength="6" autocomplete="new-password" required>
+    <label for="senha2">Repita a senha</label>
+    <input id="senha2" type="password" minlength="6" autocomplete="new-password" required>
+    <p id="erro" class="erro" role="alert"></p>
+    <button class="btn" type="submit">Criar conta</button>
+  </form>
+  <p class="muted">Já tem conta? <a href="login.html">Entrar</a>.</p>
+  <a class="btn outline" href="index.html">Voltar</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="js/config.js"></script><script src="js/app.js"></script><script src="js/cadastro.js"></script></body></html>
