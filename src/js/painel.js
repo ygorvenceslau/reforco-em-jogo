@@ -1,8 +1,6 @@
-// =====================================================================
-// painel.js — painel da professora (painel.html).
+// painel.js - painel da professora (painel.html).
 // Cria sessões de quiz, mostra o código/link para os alunos e lista as sessões anteriores.
-// A professora só enxerga as PRÓPRIAS sessões: quem garante isso é o RLS do banco.
-// =====================================================================
+// A professora só enxerga as próprias sessões: quem garante isso é o RLS do banco.
 let usuario = null;     // professora logada
 let habilidades = [];   // habilidades carregadas do banco (para o <select>)
 
@@ -41,7 +39,7 @@ function nomeDaHabilidade(id) {
   return h ? h.nome : "Todas as habilidades";
 }
 
-// CRIAR SESSÃO — principal ação do painel.
+// Criar sessão - principal ação do painel.
 async function criarSessao() {
   mostrarErro("");
   // "" = todas as habilidades misturadas; senão, o id da habilidade escolhida.
@@ -52,7 +50,7 @@ async function criarSessao() {
     return;
   }
   $("gerar").disabled = true;
-  // Insere uma linha na tabela "sessao". O CÓDIGO de 6 letras é gerado pelo próprio banco
+  // Insere uma linha na tabela "sessao". O código de 6 letras é gerado pelo próprio banco
   // (default gerar_codigo() no schema.sql) e volta para nós no .select("id, codigo").
   // O RLS só aceita a linha se professor_id for a própria professora logada.
   const { data, error } = await sb
@@ -102,7 +100,7 @@ async function alternarSessao(sessao) {
   carregarSessoes();
 }
 
-// LISTA "MINHAS SESSÕES". Não filtramos por professora aqui: o RLS do banco
+// Lista "minhas sessões". Não filtramos por professora aqui: o RLS do banco
 // já devolve só as sessões dela. participante(count) conta quantos alunos entraram.
 async function carregarSessoes() {
   const caixa = $("sessoes");
@@ -157,7 +155,7 @@ async function carregarSessoes() {
   });
 }
 
-// INÍCIO DA TELA: exige login, confere se a conta está na tabela "professor",
+// Início da tela: exige login, confere se a conta está na tabela "professor",
 // depois carrega habilidades e sessões.
 exigirLogin().then(async (sessao) => {
   if (!sessao) return;

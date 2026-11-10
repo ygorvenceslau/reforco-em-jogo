@@ -1,8 +1,6 @@
-// =====================================================================
-// quiz.js — o jogo do aluno (quiz.html).
+// quiz.js - o jogo do aluno (quiz.html).
 // Mostra uma questão por vez, envia a resposta ao banco e mostra se acertou.
-// A RESPOSTA CERTA NUNCA CHEGA AO CELULAR: quem corrige é o banco (função "responder").
-// =====================================================================
+// A resposta certa nunca chega ao celular: quem corrige é o banco (função "responder").
 
 // Sem participante salvo (aluno não passou pela tela de entrar), volta para lá.
 const aluno = participanteAtual();
@@ -16,7 +14,7 @@ let respondeu = false;  // impede responder duas vezes a mesma questão
 
 // 1) Busca as questões no banco.
 // buscar_questoes sorteia até 8 questões da habilidade da sessão e devolve
-// enunciado e alternativas, mas NÃO a coluna "correta".
+// enunciado e alternativas, mas não a coluna "correta".
 async function iniciar() {
   const { data, error } = await sb.rpc("buscar_questoes", { p_participante: aluno.participante_id });
   if (error) {

@@ -1,7 +1,5 @@
-// =====================================================================
-// entrar.js — tela onde o ALUNO entra na sessão (entrar.html).
+// entrar.js - tela onde o aluno entra na sessão (entrar.html).
 // O aluno não tem conta: só digita o código da sessão e um apelido.
-// =====================================================================
 
 // Se o aluno abriu o link da professora (entrar.html?codigo=AB12CD), o código já vem preenchido.
 const codigoNaUrl = new URLSearchParams(location.search).get("codigo");
@@ -23,7 +21,7 @@ $("form").addEventListener("submit", async (e) => {
   const botao = e.submitter;
   if (botao) botao.disabled = true;
 
-  // sb.rpc chama uma FUNÇÃO do banco (não uma tabela).
+  // sb.rpc chama uma função do banco (não uma tabela).
   // entrar_na_sessao (em supabase/schema.sql) confere o código, vê se a sessão está aberta
   // e cria o participante. O aluno nunca acessa as tabelas diretamente.
   const { data, error } = await sb.rpc("entrar_na_sessao", { p_codigo: codigo, p_nome: nome });

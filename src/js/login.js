@@ -1,7 +1,5 @@
-// =====================================================================
-// login.js — tela de login da professora (login.html).
+// login.js - tela de login da professora (login.html).
 // O login é feito pelo Supabase Auth: o site nunca guarda nem confere senhas.
-// =====================================================================
 
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault(); // impede o formulário de recarregar a página
