@@ -1,12 +1,19 @@
-// Painel da professora: criar sessão e listar as sessões anteriores.
-let usuario = null;
-let habilidades = [];
+// =====================================================================
+// painel.js — painel da professora (painel.html).
+// Cria sessões de quiz, mostra o código/link para os alunos e lista as sessões anteriores.
+// A professora só enxerga as PRÓPRIAS sessões: quem garante isso é o RLS do banco.
+// =====================================================================
+let usuario = null;     // professora logada
+let habilidades = [];   // habilidades carregadas do banco (para o <select>)
 
+// Monta o link que os alunos abrem: .../entrar.html?codigo=AB12CD
+// Usa o endereço atual do site, então funciona no computador e no Netlify.
 function linkDaSessao(codigo) {
   const pasta = location.pathname.replace(/[^/]*$/, "");
   return location.origin + pasta + "entrar.html?codigo=" + codigo;
 }
 
+// Preenche a lista "Habilidade" com o que está na tabela habilidade (seed.sql).
 async function carregarHabilidades() {
   const { data, error } = await sb.from("habilidade").select("*").order("id");
   const select = $("habilidade");
@@ -28,13 +35,16 @@ async function carregarHabilidades() {
   });
 }
 
+// Nome da habilidade a partir do id (usado na lista de sessões).
 function nomeDaHabilidade(id) {
   const h = habilidades.find((x) => x.id === id);
   return h ? h.nome : "Todas as habilidades";
 }
 
+// CRIAR SESSÃO — principal ação do painel.
 async function criarSessao() {
   mostrarErro("");
+  // "" = todas as habilidades misturadas; senão, o id da habilidade escolhida.
   const valor = $("habilidade").value;
   const habilidade = valor ? habilidades.find((h) => String(h.id) === valor) : habilidades[0];
   if (!habilidade) {
@@ -42,6 +52,9 @@ async function criarSessao() {
     return;
   }
   $("gerar").disabled = true;
+  // Insere uma linha na tabela "sessao". O CÓDIGO de 6 letras é gerado pelo próprio banco
+  // (default gerar_codigo() no schema.sql) e volta para nós no .select("id, codigo").
+  // O RLS só aceita a linha se professor_id for a própria professora logada.
   const { data, error } = await sb
     .from("sessao")
     .insert({
@@ -57,6 +70,7 @@ async function criarSessao() {
     mostrarErro("Não deu para criar a sessão. Tente de novo.");
     return;
   }
+  // Mostra o código grande, o link e o atalho para o relatório desta sessão.
   const link = linkDaSessao(data.codigo);
   $("codigo").textContent = data.codigo;
   $("link").textContent = link;
@@ -66,6 +80,7 @@ async function criarSessao() {
   carregarSessoes();
 }
 
+// Copia o link para a área de transferência (para colar no WhatsApp da turma, por exemplo).
 async function copiarLink() {
   try {
     await navigator.clipboard.writeText($("link").href);
@@ -76,6 +91,8 @@ async function copiarLink() {
   setTimeout(() => ($("copiar").textContent = "Copiar link"), 2000);
 }
 
+// Botão Encerrar/Reabrir: só troca a coluna "ativa" da sessão.
+// Com ativa = false, a função entrar_na_sessao recusa novos alunos.
 async function alternarSessao(sessao) {
   const { error } = await sb.from("sessao").update({ ativa: !sessao.ativa }).eq("id", sessao.id);
   if (error) {
@@ -85,6 +102,8 @@ async function alternarSessao(sessao) {
   carregarSessoes();
 }
 
+// LISTA "MINHAS SESSÕES". Não filtramos por professora aqui: o RLS do banco
+// já devolve só as sessões dela. participante(count) conta quantos alunos entraram.
 async function carregarSessoes() {
   const caixa = $("sessoes");
   const { data, error } = await sb
@@ -100,6 +119,7 @@ async function carregarSessoes() {
     caixa.innerHTML = '<p class="muted">Nenhuma sessão ainda. Crie a primeira acima.</p>';
     return;
   }
+  // Monta um bloco por sessão com textContent (nunca HTML), para evitar injeção de código.
   data.forEach((s) => {
     const item = document.createElement("div");
     item.className = "sessao-item";
@@ -137,6 +157,8 @@ async function carregarSessoes() {
   });
 }
 
+// INÍCIO DA TELA: exige login, confere se a conta está na tabela "professor",
+// depois carrega habilidades e sessões.
 exigirLogin().then(async (sessao) => {
   if (!sessao) return;
   usuario = sessao.user;
@@ -151,6 +173,7 @@ exigirLogin().then(async (sessao) => {
   await carregarHabilidades();
   carregarSessoes();
 });
+// Liga os botões às funções.
 $("gerar").addEventListener("click", criarSessao);
 $("copiar").addEventListener("click", copiarLink);
 $("sair").addEventListener("click", sair);

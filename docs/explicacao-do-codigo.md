@@ -1,6 +1,6 @@
 # Explicação do código (para a apresentação)
 
-Guia para cada pessoa da equipe conseguir explicar e defender o projeto. Leia junto com o código aberto.
+Guia para explicar e defender o projeto na apresentação. Leia junto com o código aberto no VS Code: os arquivos de `src/js/` e o `supabase/schema.sql` têm comentários explicando cada parte.
 
 ## 1. A ideia em uma frase
 Um site onde a **professora cria uma sessão de quiz**, os **alunos entram pelo celular com um código** e a professora vê **quem precisa de reforço em quê**.
@@ -99,9 +99,16 @@ Tradução: "uma professora logada só vê e altera as sessões em que `professo
 - **Uma professora vê os alunos da outra?** Não. O RLS filtra as linhas: com duas contas de professora, cada uma vê só as próprias sessões (teste: criar uma segunda conta e abrir o painel).
 - **Que dados do aluno vocês guardam?** Só o apelido e as respostas. Sem e-mail, senha ou telefone (ver `privacidade.html`).
 - **Como o site é publicado?** Cada alteração aprovada na branch `main` do GitHub é publicada sozinha pelo Netlify.
-- **Usaram IA?** Sim, como ferramenta de apoio (Claude Code), em tarefas pequenas e revisadas pela equipe, como previsto no `CONTEXT.md`. Cada parte foi lida e testada pela equipe e está explicada neste guia.
+- **Usou IA?** Sim, como ferramenta de apoio (Claude Code), em tarefas pequenas, como previsto no `CONTEXT.md`. Li, testei e comentei cada parte, e consigo explicar o que cada arquivo faz.
 
-## 9. Sugestão de divisão na apresentação
-- **Pessoa 1 – telas e painel:** seções 2, 3 e 5 (criar sessão, código, link, encerrar).
-- **Pessoa 2 – banco, segurança e publicação:** seção 7 e as perguntas sobre chave, RLS e Netlify.
-- **Pessoa 3 – questões e relatório:** seção 6 (fluxo do aluno) e o relatório com "Reforçar".
+## 9. Ordem para apresentar (uma pessoa)
+1. **Problema e ideia** (seção 1) — sem código, 1 minuto.
+2. **Arquitetura** (seção 2) — mostre o desenho e o `config.js`.
+3. **Demonstração ao vivo** — siga `docs/roteiro-demonstracao.md`.
+4. **Código no VS Code**, nesta ordem:
+   1. `src/js/app.js` — a conexão com o Supabase e as funções comuns.
+   2. `src/js/painel.js` — `criarSessao()`: como a sessão e o código nascem.
+   3. `src/js/entrar.js` e `src/js/quiz.js` — o aluno só chama funções (`sb.rpc`).
+   4. `supabase/schema.sql` — a função `responder` (correção no servidor) e as regras de RLS.
+   5. `src/js/relatorio.js` — as views e a regra dos 60%.
+5. **Perguntas** — use a seção 8.

@@ -2,12 +2,19 @@
 -- Como usar: Supabase > SQL Editor > colar este arquivo inteiro > Run. Depois rodar seed.sql.
 -- Pode rodar de novo sem problema: nada é apagado e o que já existe é mantido ou atualizado.
 
+-- =====================================================================
+-- TABELAS
+-- professor → sessao → participante → resposta      habilidade → questao
+-- =====================================================================
+
+-- Professora. O id é o MESMO do usuário de login (auth.users), por isso é PK e FK ao mesmo tempo.
 create table if not exists professor (
   id uuid primary key references auth.users(id) on delete cascade,
   nome text not null,
   escola text
 );
 
+-- Assunto/habilidade trabalhada (ex.: Ortografia), por disciplina e série.
 create table if not exists habilidade (
   id serial primary key,
   disciplina text not null,
@@ -15,6 +22,8 @@ create table if not exists habilidade (
   nome text not null
 );
 
+-- Questão de múltipla escolha. "correta" guarda a letra certa e NUNCA é enviada ao aluno.
+-- O CHECK garante que só existam as letras A, B, C ou D.
 create table if not exists questao (
   id serial primary key,
   habilidade_id int not null references habilidade(id),
@@ -26,11 +35,14 @@ create table if not exists questao (
   correta char(1) not null check (correta in ('A','B','C','D'))
 );
 
+-- Gera o código da sessão: 6 caracteres aleatórios em maiúsculas (ex.: 3F9A1C).
 create or replace function gerar_codigo() returns text
 language sql as $$
   select upper(substr(md5(random()::text || clock_timestamp()::text), 1, 6));
 $$;
 
+-- Sessão de jogo criada pela professora. habilidade_id nulo = todas as habilidades misturadas.
+-- "ativa" = false significa sessão encerrada (ninguém mais entra nem responde).
 create table if not exists sessao (
   id uuid primary key default gen_random_uuid(),
   codigo text not null unique default gerar_codigo(),
@@ -42,6 +54,8 @@ create table if not exists sessao (
   criada_em timestamptz not null default now()
 );
 
+-- Aluno dentro de uma sessão. Sem conta: só o apelido (1 a 30 caracteres).
+-- "on delete cascade": se a sessão for apagada, os participantes vão junto.
 create table if not exists participante (
   id uuid primary key default gen_random_uuid(),
   sessao_id uuid not null references sessao(id) on delete cascade,
@@ -49,6 +63,8 @@ create table if not exists participante (
   entrou_em timestamptz not null default now()
 );
 
+-- Cada resposta do aluno. O UNIQUE (participante_id, questao_id) impede responder
+-- a mesma questão duas vezes: só a primeira resposta vale.
 create table if not exists resposta (
   id serial primary key,
   participante_id uuid not null references participante(id) on delete cascade,
@@ -59,10 +75,16 @@ create table if not exists resposta (
   unique (participante_id, questao_id)
 );
 
+-- Índices para deixar os relatórios rápidos (buscas por sessão e por participante).
 create index if not exists participante_sessao_idx on participante (sessao_id);
 create index if not exists resposta_participante_idx on resposta (participante_id);
 
--- Segurança (RLS): o aluno NÃO acessa tabelas direto; só chama as funções abaixo.
+-- =====================================================================
+-- SEGURANÇA (RLS = Row Level Security, segurança por linha)
+-- Com o RLS ligado, o PostgreSQL só devolve as linhas permitidas pelas "policies".
+-- auth.uid() = id da professora logada. Sem policy = ninguém acessa.
+-- O aluno (papel "anon") NÃO acessa tabelas direto; só chama as funções mais abaixo.
+-- =====================================================================
 alter table professor enable row level security;
 alter table habilidade enable row level security;
 alter table questao enable row level security;
@@ -83,11 +105,13 @@ create policy "professor ve questoes" on questao
   for select to authenticated using (true);
 
 drop policy if exists "professor gerencia suas sessoes" on sessao;
+-- Regra principal: a professora só vê, cria, altera e apaga sessões em que ela é a dona.
 create policy "professor gerencia suas sessoes" on sessao
   for all to authenticated
   using (professor_id = auth.uid()) with check (professor_id = auth.uid());
 
 drop policy if exists "professor ve participantes das suas sessoes" on participante;
+-- Participantes e respostas: só os que pertencem a uma sessão da professora logada.
 create policy "professor ve participantes das suas sessoes" on participante
   for select to authenticated
   using (exists (select 1 from sessao s where s.id = sessao_id and s.professor_id = auth.uid()));
@@ -99,7 +123,14 @@ create policy "professor ve respostas das suas sessoes" on resposta
     select 1 from participante p join sessao s on s.id = p.sessao_id
     where p.id = participante_id and s.professor_id = auth.uid()));
 
--- Funções chamadas pelo aluno (sem login). Rodam com permissão do dono do banco.
+-- =====================================================================
+-- FUNÇÕES DO ALUNO (chamadas pelo site com sb.rpc, sem login)
+-- "security definer": rodam com permissão do dono do banco, mas só fazem o que está escrito aqui.
+-- É assim que o aluno consegue jogar sem enxergar nenhuma tabela.
+-- =====================================================================
+
+-- Entrar: valida o nome, procura a sessão pelo código, recusa sessão encerrada
+-- e cria o participante. Devolve o id do participante para o site guardar.
 create or replace function entrar_na_sessao(p_codigo text, p_nome text)
 returns json language plpgsql security definer set search_path = public as $$
 declare
@@ -121,7 +152,8 @@ begin
   return json_build_object('participante_id', v_id, 'sessao_id', v_sessao.id, 'nome', trim(p_nome));
 end $$;
 
--- Devolve as questões SEM a alternativa correta.
+-- Sorteia até 8 questões da disciplina/série da sessão (e da habilidade, se escolhida).
+-- Devolve as questões SEM a coluna "correta": a resposta certa nunca sai do banco.
 create or replace function buscar_questoes(p_participante uuid, p_limite int default 8)
 returns table (id int, enunciado text, alt_a text, alt_b text, alt_c text, alt_d text, assunto text)
 language sql security definer set search_path = public as $$
@@ -136,7 +168,9 @@ language sql security definer set search_path = public as $$
   limit p_limite;
 $$;
 
--- Confere a resposta no servidor, grava e devolve true/false.
+-- Responder: compara a letra escolhida com a correta AQUI NO SERVIDOR, grava na tabela
+-- resposta e devolve só true (acertou) ou false (errou).
+-- "on conflict do nothing": se já respondeu essa questão, a segunda resposta é ignorada.
 create or replace function responder(p_participante uuid, p_questao int, p_escolhida text)
 returns boolean language plpgsql security definer set search_path = public as $$
 declare
@@ -161,11 +195,19 @@ begin
   return v_ok;
 end $$;
 
+-- Libera as 3 funções para o aluno (anon) e para a professora (authenticated).
 grant execute on function entrar_na_sessao(text, text) to anon, authenticated;
 grant execute on function buscar_questoes(uuid, int) to anon, authenticated;
 grant execute on function responder(uuid, int, text) to anon, authenticated;
 
--- Relatórios (a professora só enxerga as próprias sessões, por causa do RLS)
+-- =====================================================================
+-- RELATÓRIOS (views = consultas salvas, usadas pelo relatorio.js)
+-- security_invoker = true: a view usa as permissões de QUEM CONSULTA,
+-- então o RLS continua valendo e a professora só vê os próprios alunos.
+-- percentual = 100 * acertos / respondidas (nullif evita divisão por zero).
+-- =====================================================================
+
+-- Acertos de cada aluno (left join: aluno que ainda não respondeu aparece com 0).
 create or replace view v_acertos_por_aluno with (security_invoker = true) as
 select p.sessao_id, p.id as participante_id, p.nome,
        count(r.id) as respondidas,
@@ -175,6 +217,7 @@ from participante p
 left join resposta r on r.participante_id = p.id
 group by p.sessao_id, p.id, p.nome;
 
+-- Acertos de cada assunto (habilidade) na sessão: mostra o que a turma precisa reforçar.
 create or replace view v_acertos_por_assunto with (security_invoker = true) as
 select p.sessao_id, h.nome as assunto,
        count(r.id) as respondidas,

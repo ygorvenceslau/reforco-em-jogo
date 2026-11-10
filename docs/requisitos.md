@@ -1,4 +1,4 @@
-# Requisitos e casos de uso (rascunho para a equipe revisar)
+# Requisitos e casos de uso (rascunho para revisar)
 
 ## Requisitos funcionais (RF)
 - **RF01** A professora entra com e-mail e senha.
