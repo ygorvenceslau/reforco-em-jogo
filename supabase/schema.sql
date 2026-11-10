@@ -2,12 +2,10 @@
 -- Como usar: Supabase > SQL Editor > colar este arquivo inteiro > Run. Depois rodar seed.sql.
 -- Pode rodar de novo sem problema: nada é apagado e o que já existe é mantido ou atualizado.
 
--- =====================================================================
--- TABELAS
--- professor → sessao → participante → resposta      habilidade → questao
--- =====================================================================
+-- Tabelas
+-- professor -> sessao -> participante -> resposta      habilidade -> questao
 
--- Professora. O id é o MESMO do usuário de login (auth.users), por isso é PK e FK ao mesmo tempo.
+-- Professora. O id é o mesmo do usuário de login (auth.users), por isso é PK e FK ao mesmo tempo.
 create table if not exists professor (
   id uuid primary key references auth.users(id) on delete cascade,
   nome text not null,
@@ -22,7 +20,7 @@ create table if not exists habilidade (
   nome text not null
 );
 
--- Questão de múltipla escolha. "correta" guarda a letra certa e NUNCA é enviada ao aluno.
+-- Questão de múltipla escolha. "correta" guarda a letra certa e nunca é enviada ao aluno.
 -- O CHECK garante que só existam as letras A, B, C ou D.
 create table if not exists questao (
   id serial primary key,
@@ -79,12 +77,10 @@ create table if not exists resposta (
 create index if not exists participante_sessao_idx on participante (sessao_id);
 create index if not exists resposta_participante_idx on resposta (participante_id);
 
--- =====================================================================
--- SEGURANÇA (RLS = Row Level Security, segurança por linha)
+-- Segurança (RLS = Row Level Security, segurança por linha)
 -- Com o RLS ligado, o PostgreSQL só devolve as linhas permitidas pelas "policies".
 -- auth.uid() = id da professora logada. Sem policy = ninguém acessa.
--- O aluno (papel "anon") NÃO acessa tabelas direto; só chama as funções mais abaixo.
--- =====================================================================
+-- O aluno (papel "anon") não acessa tabelas direto; só chama as funções mais abaixo.
 alter table professor enable row level security;
 alter table habilidade enable row level security;
 alter table questao enable row level security;
@@ -123,11 +119,9 @@ create policy "professor ve respostas das suas sessoes" on resposta
     select 1 from participante p join sessao s on s.id = p.sessao_id
     where p.id = participante_id and s.professor_id = auth.uid()));
 
--- =====================================================================
--- FUNÇÕES DO ALUNO (chamadas pelo site com sb.rpc, sem login)
+-- Funções do aluno (chamadas pelo site com sb.rpc, sem login)
 -- "security definer": rodam com permissão do dono do banco, mas só fazem o que está escrito aqui.
 -- É assim que o aluno consegue jogar sem enxergar nenhuma tabela.
--- =====================================================================
 
 -- Entrar: valida o nome, procura a sessão pelo código, recusa sessão encerrada
 -- e cria o participante. Devolve o id do participante para o site guardar.
@@ -153,7 +147,7 @@ begin
 end $$;
 
 -- Sorteia até 8 questões da disciplina/série da sessão (e da habilidade, se escolhida).
--- Devolve as questões SEM a coluna "correta": a resposta certa nunca sai do banco.
+-- Devolve as questões sem a coluna "correta": a resposta certa nunca sai do banco.
 create or replace function buscar_questoes(p_participante uuid, p_limite int default 8)
 returns table (id int, enunciado text, alt_a text, alt_b text, alt_c text, alt_d text, assunto text)
 language sql security definer set search_path = public as $$
@@ -168,7 +162,7 @@ language sql security definer set search_path = public as $$
   limit p_limite;
 $$;
 
--- Responder: compara a letra escolhida com a correta AQUI NO SERVIDOR, grava na tabela
+-- Responder: compara a letra escolhida com a correta aqui no servidor, grava na tabela
 -- resposta e devolve só true (acertou) ou false (errou).
 -- "on conflict do nothing": se já respondeu essa questão, a segunda resposta é ignorada.
 create or replace function responder(p_participante uuid, p_questao int, p_escolhida text)
@@ -200,12 +194,10 @@ grant execute on function entrar_na_sessao(text, text) to anon, authenticated;
 grant execute on function buscar_questoes(uuid, int) to anon, authenticated;
 grant execute on function responder(uuid, int, text) to anon, authenticated;
 
--- =====================================================================
--- RELATÓRIOS (views = consultas salvas, usadas pelo relatorio.js)
--- security_invoker = true: a view usa as permissões de QUEM CONSULTA,
+-- Relatórios (views = consultas salvas, usadas pelo relatorio.js)
+-- security_invoker = true: a view usa as permissões de quem consulta,
 -- então o RLS continua valendo e a professora só vê os próprios alunos.
 -- percentual = 100 * acertos / respondidas (nullif evita divisão por zero).
--- =====================================================================
 
 -- Acertos de cada aluno (left join: aluno que ainda não respondeu aparece com 0).
 create or replace view v_acertos_por_aluno with (security_invoker = true) as
@@ -229,7 +221,7 @@ join questao q on q.id = r.questao_id
 join habilidade h on h.id = q.habilidade_id
 group by p.sessao_id, h.nome;
 
--- Permissões de acesso pela API (o RLS acima continua decidindo quais LINHAS cada um vê).
+-- Permissões de acesso pela API (o RLS acima continua decidindo quais linhas cada um vê).
 -- Explícitas para funcionar mesmo em projetos que não liberam tabelas novas automaticamente.
 grant usage on schema public to anon, authenticated;
 grant select on habilidade to anon, authenticated;

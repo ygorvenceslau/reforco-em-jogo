@@ -1,11 +1,9 @@
-// =====================================================================
-// relatorio.js — relatório de uma sessão (relatorio.html?sessao=<id>).
-// Mostra acertos por ASSUNTO e por ALUNO e marca "Reforçar" abaixo de 60%.
+// relatorio.js - relatório de uma sessão (relatorio.html?sessao=<id>).
+// Mostra acertos por assunto e por aluno e marca "Reforçar" abaixo de 60%.
 // As contas são feitas no banco por duas views (v_acertos_por_aluno e v_acertos_por_assunto);
 // aqui só desenhamos as tabelas. As views respeitam o RLS: a professora só vê os próprios alunos.
-// =====================================================================
 const sessaoId = new URLSearchParams(location.search).get("sessao"); // id que veio na URL
-const LIMITE_REFORCO = 60; // regra de negócio: abaixo de 60% de acerto → "Reforçar"
+const LIMITE_REFORCO = 60; // regra de negócio: abaixo de 60% de acerto -> "Reforçar"
 
 // Cria uma célula de tabela com texto. textContent (e não innerHTML) impede que um aluno
 // que digite código HTML no nome consiga alterar a página (proteção contra XSS).

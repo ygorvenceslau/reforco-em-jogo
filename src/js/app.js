@@ -1,14 +1,12 @@
-// =====================================================================
-// app.js — código COMUM, carregado por todas as telas do site.
-// Ordem de carregamento no HTML: biblioteca do Supabase → config.js → app.js → js da tela.
-// =====================================================================
+// app.js - código comum, carregado por todas as telas do site.
+// Ordem de carregamento no HTML: biblioteca do Supabase -> config.js -> app.js -> js da tela.
 
 // Aviso para quem esquecer de preencher o config.js com os dados do Supabase.
 if (CONFIG.SUPABASE_URL.includes("SEU-PROJETO")) {
   alert("Configure o Supabase em src/js/config.js antes de usar o site. Veja diagnostico.html.");
 }
 
-// CONEXÃO COM O BANCO: "sb" é o cliente do Supabase usado em todas as telas.
+// Conexão com o banco: "sb" é o cliente do Supabase usado em todas as telas.
 // Com ele fazemos login (sb.auth), consultas em tabelas (sb.from) e chamadas de funções (sb.rpc).
 const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
 
@@ -21,7 +19,7 @@ function mostrarErro(texto) {
   if (el) el.textContent = texto || "";
 }
 
-// PROTEÇÃO DAS TELAS DA PROFESSORA (painel e relatório).
+// Proteção das telas da professora (painel e relatório).
 // Pergunta ao Supabase se existe alguém logado. Se não existir, manda para o login.
 async function exigirLogin() {
   const { data } = await sb.auth.getSession();
@@ -38,7 +36,7 @@ async function sair() {
   location.href = "index.html";
 }
 
-// O ALUNO NÃO TEM CONTA. Ao entrar na sessão, guardamos os dados dele no sessionStorage,
+// O aluno não tem conta. Ao entrar na sessão, guardamos os dados dele no sessionStorage,
 // que fica só nesta aba do navegador e some quando ela é fechada.
 function participanteAtual() {
   const bruto = sessionStorage.getItem("participante");

@@ -1,84 +1,81 @@
 # Reforço em Jogo
 
-**Site no ar: https://reforcoemjogo.netlify.app**
+Site: https://reforcoemjogo.netlify.app
 
-Plataforma web de quizzes curtos para fazer o **reforço escolar dentro da aula**. A professora cria uma sessão, os alunos entram pelo celular com um código e, no final, ela vê **quem precisa de reforço e em qual assunto**.
+Plataforma de quizzes curtos para fazer reforço escolar dentro da sala de aula. A professora cria uma sessão, os alunos entram pelo celular com um código e, no final, ela vê quem precisa de reforço e em qual assunto.
 
-Projeto integrado (Extensão/PIES I, CTS, UX, Front End e Banco de Dados).
+Projeto integrado das disciplinas de Extensão (PIES I), CTS, UX, Front End e Banco de Dados.
 
-## O problema
-Com o ensino integral não existe mais contraturno: o aluno que precisa de reforço sai da sala e perde conteúdo.
+## Problema
 
-## A solução
-1. A **professora** faz login, escolhe a habilidade e gera uma sessão com um **código de 6 letras**.
-2. O **aluno** entra pelo celular com o código e um apelido, **sem criar conta**, e joga um quiz de até 8 questões.
-3. Ele vê na hora se acertou e, no fim, o resultado.
-4. A professora abre o **relatório**: acertos por aluno e por assunto, com a marcação **"Reforçar"** abaixo de 60%.
+Com o ensino integral não existe mais contraturno, então o aluno que precisa de reforço tem que sair da sala e acaba perdendo conteúdo.
+
+## Como funciona
+
+1. A professora faz login, escolhe a habilidade e gera uma sessão. O site mostra um código de 6 caracteres e um link.
+2. O aluno abre o site no celular, digita o código e um apelido (não precisa criar conta) e responde até 8 questões.
+3. Depois de cada resposta ele já vê se acertou, e no final aparece o resultado.
+4. No relatório a professora vê os acertos por aluno e por assunto. Quem fica abaixo de 60% aparece como "Reforçar".
 
 ## Tecnologias
-| Parte | Tecnologia | Para que serve |
-|---|---|---|
-| Telas | HTML, CSS e JavaScript puros | Funcionam no navegador do celular, sem instalar nada |
-| Hospedagem | Netlify | Publica a pasta `src/` a cada atualização da `main` |
-| Banco de dados | Supabase (PostgreSQL) | Tabelas, login da professora e regras de segurança |
 
-```
-Celular / notebook  ──►  Netlify (telas da pasta src/)
-        │
-        └──────────────►  Supabase (PostgreSQL + login + RLS)
-```
+- HTML, CSS e JavaScript puro nas telas (pasta `src`)
+- Supabase (PostgreSQL) para o banco de dados e o login da professora
+- Netlify para hospedar o site, que é publicado de novo a cada atualização da branch `main`
 
 ## Segurança e privacidade
-- **A resposta certa nunca vai para o celular**: o aluno envia a letra e o banco corrige e devolve só certo/errado.
-- **RLS (segurança por linha)**: cada professora só vê as próprias sessões, alunos e respostas. Quem garante é o próprio banco.
-- O aluno **não acessa tabelas**: só chama 3 funções do banco (entrar, buscar questões e responder).
-- Cada questão só pode ser respondida **uma vez** por aluno.
-- Do aluno guardamos **só o apelido e as respostas**. Sem anúncios e sem rastreadores.
-- A chave no `config.js` é a **pública** (publishable). A chave secreta nunca é usada no site.
+
+- O aluno não acessa as tabelas do banco. Ele só usa três funções: entrar na sessão, buscar as questões e responder.
+- A alternativa correta não é enviada para o celular. A correção é feita no banco, que devolve só se acertou ou errou.
+- Cada questão só pode ser respondida uma vez por aluno.
+- Foi usado RLS (Row Level Security) em todas as tabelas, então cada professora só vê as próprias sessões e alunos.
+- Do aluno é guardado só o apelido e as respostas.
+- A chave que aparece no `config.js` é a chave pública do Supabase. A chave secreta não é usada no site.
 
 ## Banco de dados
-Tabelas: `professor` → `sessao` → `participante` → `resposta`, e `habilidade` → `questao`.
-Relatórios por duas views: `v_acertos_por_aluno` e `v_acertos_por_assunto`.
-Diagrama (DER) e modelo lógico: [`docs/banco-de-dados.md`](docs/banco-de-dados.md).
 
-## Onde está cada coisa
-| Arquivo | O que faz |
-|---|---|
-| `src/index.html` | Tela inicial: "Sou professora" ou "Sou aluno" |
-| `src/js/login.js` | Login da professora |
-| `src/js/painel.js` | Criar sessão, mostrar código/link, encerrar e reabrir |
-| `src/js/entrar.js` | Aluno entra com código e apelido |
-| `src/js/quiz.js` | O jogo: questões, acerto/erro e resultado |
-| `src/js/relatorio.js` | Acertos por aluno e por assunto, com "Reforçar" |
-| `src/js/app.js` | Código comum: conexão com o Supabase e funções de apoio |
-| `src/js/config.js` | Endereço do Supabase e chave pública |
-| `src/diagnostico.html` | Confere se o site está ligado ao banco |
-| `supabase/schema.sql` | Tabelas, regras de segurança, funções e views |
-| `supabase/seed.sql` | 12 questões de Língua Portuguesa (5º ano) |
-| `supabase/professora.sql` | Liga a conta de login à tabela `professor` |
-| `supabase/demo.sql` | Alunos fictícios para demonstração |
+Tabelas: `professor`, `sessao`, `participante`, `resposta`, `habilidade` e `questao`.
+O relatório usa as views `v_acertos_por_aluno` e `v_acertos_por_assunto`.
 
-O código está comentado em português, explicando cada parte.
+O DER e o modelo lógico estão em `docs/banco-de-dados.md`.
 
-## Documentação
-- [Explicação do código](docs/explicacao-do-codigo.md): como tudo funciona e perguntas frequentes.
-- [Requisitos e casos de uso](docs/requisitos.md)
-- [Banco de dados: DER e modelo lógico](docs/banco-de-dados.md)
-- [Roteiro da apresentação](docs/roteiro-demonstracao.md)
-- [Como configurar o Supabase](docs/configurar-supabase.md)
+## Estrutura
 
-## Como rodar no computador
+```
+src/
+  index.html         tela inicial
+  login.html         login da professora
+  painel.html        criar e listar sessões
+  entrar.html        entrada do aluno
+  quiz.html          o jogo
+  relatorio.html     relatório da sessão
+  diagnostico.html   testa a ligação com o banco
+  css/style.css
+  js/                um arquivo para cada tela + app.js (comum) e config.js
+supabase/
+  schema.sql         tabelas, segurança, funções e views
+  seed.sql           12 questões de Português (5º ano)
+  professora.sql     liga a conta de login à tabela professor
+  demo.sql           alunos fictícios para demonstração
+docs/                requisitos, banco de dados, roteiro e explicação do código
+```
+
+## Rodar localmente
+
 ```bash
 cd src
 python3 -m http.server 8000
 ```
-Abra http://localhost:8000. Para criar o banco do zero, siga [`docs/configurar-supabase.md`](docs/configurar-supabase.md).
+
+Depois é só abrir http://localhost:8000. Para criar o banco do zero, ver `docs/configurar-supabase.md`.
 
 ## Próximos passos
-- Outros tipos de jogo além do quiz.
-- Cadastro de questões pela tela.
-- Mais disciplinas e séries.
-- QR Code para os alunos entrarem sem digitar o código.
 
-## Uso de IA
-O desenvolvimento usou o Claude Code como ferramenta de apoio, em tarefas pequenas, revisadas, testadas e comentadas.
+- Outros tipos de jogo além do quiz
+- Cadastro de questões pela tela
+- Mais disciplinas e séries
+- QR Code para entrar na sessão
+
+## Observação
+
+Usei o Claude Code como ferramenta de apoio durante o desenvolvimento. O código foi revisado, testado e comentado.
