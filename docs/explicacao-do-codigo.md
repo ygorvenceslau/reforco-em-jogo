@@ -96,7 +96,7 @@ Tradução: "uma professora logada só vê e altera as sessões em que `professo
 - **A chave no `config.js` não é um risco?** Não. É a chave pública (publishable/anon), feita para ficar no site. A segurança vem do RLS. A chave secreta (`service_role`) nunca foi usada no código.
 - **O aluno pode responder duas vezes a mesma questão?** Não. A tabela `resposta` tem `unique (participante_id, questao_id)`, então só a primeira resposta vale.
 - **O aluno pode ver a resposta certa?** Não. `buscar_questoes` não devolve a coluna `correta`, e a correção acontece no servidor.
-- **Uma professora vê os alunos da outra?** Não. Testamos com duas contas: o RLS devolve zero linhas.
+- **Uma professora vê os alunos da outra?** Não. O RLS filtra as linhas: com duas contas de professora, cada uma vê só as próprias sessões (teste: criar uma segunda conta e abrir o painel).
 - **Que dados do aluno vocês guardam?** Só o apelido e as respostas. Sem e-mail, senha ou telefone (ver `privacidade.html`).
 - **Como o site é publicado?** Cada alteração aprovada na branch `main` do GitHub é publicada sozinha pelo Netlify.
 - **Usaram IA?** Sim, como ferramenta de apoio (Claude Code), em tarefas pequenas e revisadas pela equipe, como previsto no `CONTEXT.md`. Cada parte foi lida e testada pela equipe e está explicada neste guia.
