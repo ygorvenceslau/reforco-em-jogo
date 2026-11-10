@@ -1,58 +1,84 @@
 # Reforço em Jogo
 
-Plataforma web de jogos educativos para reforço escolar, feita como projeto integrado (Extensão/PIES I e CTS, UX, Front End e Banco de Dados). A professora cria uma sessão, o aluno entra pelo celular com um código e joga um quiz curto, e a professora vê o relatório por aluno e por assunto.
+**Site no ar: https://reforcoemjogo.netlify.app**
 
-**Prazo do MVP: terça, 3 de novembro de 2026.** Veja `CONTEXT.md` (decisões e escopo) e `TAREFAS.md` (quem faz o quê).
+Plataforma web de quizzes curtos para fazer o **reforço escolar dentro da aula**. A professora cria uma sessão, os alunos entram pelo celular com um código e, no final, ela vê **quem precisa de reforço e em qual assunto**.
 
-## O que já vem pronto
-- Banco completo (`supabase/schema.sql`) com regras de segurança, funções do aluno e views de relatório.
-- 12 questões de Português do 5º ano (`supabase/seed.sql`), para a professora revisar.
-- Funcionando: login da professora, painel (criar sessão, ver código/link, listar, encerrar e reabrir), entrada do aluno por código, quiz e relatório (por aluno e por assunto, com marcação "Reforçar").
-- `supabase/professora.sql`: liga a conta de login à tabela `professor`. `supabase/demo.sql`: alunos fictícios para a demonstração.
-- `diagnostico.html`: mostra se o site está ligado ao Supabase e o que falta configurar.
-- `docs/`: requisitos e casos de uso, DER e modelo lógico, roteiro da demonstração.
+Projeto integrado (Extensão/PIES I, CTS, UX, Front End e Banco de Dados).
 
-## Passo a passo (uma pessoa faz, os outros acompanham)
+## O problema
+Com o ensino integral não existe mais contraturno: o aluno que precisa de reforço sai da sala e perde conteúdo.
 
-### 1. GitHub
-1. Em github.com, clique em **New repository**, nome `reforco-em-jogo`, **Private**, sem README.
-2. Na pasta do projeto:
-   ```bash
-   git init
-   git add .
-   git commit -m "Base do projeto"
-   git branch -M main
-   git remote add origin https://github.com/SEU-USUARIO/reforco-em-jogo.git
-   git push -u origin main
-   ```
-3. Em **Settings > Collaborators**, convide os outros dois.
-4. Cada pessoa trabalha em uma branch (`git checkout -b nome-tarefa`) e abre um Pull Request. Combinem quem revisa.
+## A solução
+1. A **professora** faz login, escolhe a habilidade e gera uma sessão com um **código de 6 letras**.
+2. O **aluno** entra pelo celular com o código e um apelido, **sem criar conta**, e joga um quiz de até 8 questões.
+3. Ele vê na hora se acertou e, no fim, o resultado.
+4. A professora abre o **relatório**: acertos por aluno e por assunto, com a marcação **"Reforçar"** abaixo de 60%.
 
-### 2. Supabase
-Siga **`docs/configurar-supabase.md`**: passo a passo e tabela com os erros mais comuns. Resumo:
-1. Crie o projeto (região São Paulo).
-2. SQL Editor: rode `supabase/schema.sql` e depois `supabase/seed.sql` (podem ser rodados de novo sem problema).
-3. Authentication > Users > Add user (marque *Auto Confirm User*) e rode `supabase/professora.sql` com o e-mail dela.
-4. Copie a Project URL e a chave anon/publishable para `src/js/config.js`. Nunca a `service_role`.
-5. Abra `diagnostico.html` para conferir.
+## Tecnologias
+| Parte | Tecnologia | Para que serve |
+|---|---|---|
+| Telas | HTML, CSS e JavaScript puros | Funcionam no navegador do celular, sem instalar nada |
+| Hospedagem | Netlify | Publica a pasta `src/` a cada atualização da `main` |
+| Banco de dados | Supabase (PostgreSQL) | Tabelas, login da professora e regras de segurança |
 
-### 3. Rodar no computador
+```
+Celular / notebook  ──►  Netlify (telas da pasta src/)
+        │
+        └──────────────►  Supabase (PostgreSQL + login + RLS)
+```
+
+## Segurança e privacidade
+- **A resposta certa nunca vai para o celular**: o aluno envia a letra e o banco corrige e devolve só certo/errado.
+- **RLS (segurança por linha)**: cada professora só vê as próprias sessões, alunos e respostas. Quem garante é o próprio banco.
+- O aluno **não acessa tabelas**: só chama 3 funções do banco (entrar, buscar questões e responder).
+- Cada questão só pode ser respondida **uma vez** por aluno.
+- Do aluno guardamos **só o apelido e as respostas**. Sem anúncios e sem rastreadores.
+- A chave no `config.js` é a **pública** (publishable). A chave secreta nunca é usada no site.
+
+## Banco de dados
+Tabelas: `professor` → `sessao` → `participante` → `resposta`, e `habilidade` → `questao`.
+Relatórios por duas views: `v_acertos_por_aluno` e `v_acertos_por_assunto`.
+Diagrama (DER) e modelo lógico: [`docs/banco-de-dados.md`](docs/banco-de-dados.md).
+
+## Onde está cada coisa
+| Arquivo | O que faz |
+|---|---|
+| `src/index.html` | Tela inicial: "Sou professora" ou "Sou aluno" |
+| `src/js/login.js` | Login da professora |
+| `src/js/painel.js` | Criar sessão, mostrar código/link, encerrar e reabrir |
+| `src/js/entrar.js` | Aluno entra com código e apelido |
+| `src/js/quiz.js` | O jogo: questões, acerto/erro e resultado |
+| `src/js/relatorio.js` | Acertos por aluno e por assunto, com "Reforçar" |
+| `src/js/app.js` | Código comum: conexão com o Supabase e funções de apoio |
+| `src/js/config.js` | Endereço do Supabase e chave pública |
+| `src/diagnostico.html` | Confere se o site está ligado ao banco |
+| `supabase/schema.sql` | Tabelas, regras de segurança, funções e views |
+| `supabase/seed.sql` | 12 questões de Língua Portuguesa (5º ano) |
+| `supabase/professora.sql` | Liga a conta de login à tabela `professor` |
+| `supabase/demo.sql` | Alunos fictícios para demonstração |
+
+O código está comentado em português, explicando cada parte.
+
+## Documentação
+- [Explicação do código](docs/explicacao-do-codigo.md): como tudo funciona e perguntas frequentes.
+- [Requisitos e casos de uso](docs/requisitos.md)
+- [Banco de dados: DER e modelo lógico](docs/banco-de-dados.md)
+- [Roteiro da apresentação](docs/roteiro-demonstracao.md)
+- [Como configurar o Supabase](docs/configurar-supabase.md)
+
+## Como rodar no computador
 ```bash
 cd src
 python3 -m http.server 8000
 ```
-Abra http://localhost:8000. (Ou use a extensão Live Server do VS Code na pasta `src`.)
+Abra http://localhost:8000. Para criar o banco do zero, siga [`docs/configurar-supabase.md`](docs/configurar-supabase.md).
 
-### 4. Testar o fluxo completo
-1. Entre como professora (`login.html`) e crie uma sessão no painel.
-2. Em outro aparelho (ou aba anônima), abra o link da sessão, digite um nome e jogue.
-3. Volte ao painel, abra o **Relatório** e clique em **Atualizar**.
-4. Para ter uma turma de exemplo, rode `supabase/demo.sql` no SQL Editor (usa a sessão mais recente).
+## Próximos passos
+- Outros tipos de jogo além do quiz.
+- Cadastro de questões pela tela.
+- Mais disciplinas e séries.
+- QR Code para os alunos entrarem sem digitar o código.
 
-### 5. Publicar online
-No Netlify: **Add new site > Import from GitHub**, escolha o repositório. O `netlify.toml` já aponta a pasta `src`. Cada `git push` na `main` publica de novo.
-
-## Observações
-- Não testamos contra o seu projeto Supabase: se algo falhar na primeira execução do SQL, leia a mensagem de erro e ajuste.
-- A biblioteca do Supabase vem de uma CDN (versão fixa no HTML). Se der problema de carregamento, instale pelo npm.
-- Antes de usar com alunos de verdade: autorização da escola e dos responsáveis.
+## Uso de IA
+O desenvolvimento usou o Claude Code como ferramenta de apoio, em tarefas pequenas, revisadas, testadas e comentadas.
