@@ -1,8 +1,10 @@
-# Reforço em Jogo
+# Quizzes & Masmorras
 
 Site: https://reforcoemjogo.netlify.app
 
-Plataforma de quizzes curtos para fazer reforço escolar dentro da sala de aula. A professora cria uma sessão, os alunos entram pelo celular com um código e, no final, ela vê quem precisa de reforço e em qual assunto.
+Plataforma gamificada para reforço escolar no Ensino Fundamental. O Mestre (docente, monitor ou quem reúne amigos para estudar) cria uma sala, os Aprendizes entram pelo celular com um código e enfrentam monstros respondendo questões. No final, o Mestre vê quem precisa de reforço e em qual assunto.
+
+Em desenvolvimento: a masmorra (batalha com ondas, chefão, poções e equipamentos), solo e em grupo.
 
 Projeto integrado das disciplinas de Extensão (PIES I), CTS, UX, Front End e Banco de Dados.
 
@@ -12,24 +14,24 @@ Com o ensino integral não existe mais contraturno, então o aluno que precisa d
 
 ## Como funciona
 
-1. A professora faz login, escolhe a habilidade e gera uma sessão. O site mostra um código de 6 caracteres e um link.
-2. O aluno abre o site no celular, digita o código e um apelido (não precisa criar conta) e responde até 8 questões.
+1. O Mestre cria uma conta, escolhe ano, disciplina e assunto e cria uma sala. O site mostra um código de 6 caracteres e um link.
+2. O Aprendiz abre o site no celular, digita o código e um apelido (não precisa criar conta) e joga.
 3. Depois de cada resposta ele já vê se acertou, e no final aparece o resultado.
-4. No relatório a professora vê os acertos por aluno e por assunto. Quem fica abaixo de 60% aparece como "Reforçar".
+4. No relatório o Mestre vê os acertos por aprendiz e por assunto. Quem fica abaixo de 60% aparece como "Reforçar". Salas antigas podem ser encerradas ou excluídas.
 
 ## Tecnologias
 
-- HTML, CSS e JavaScript puro nas telas (pasta `src`)
-- Supabase (PostgreSQL) para o banco de dados e o login da professora
-- Netlify para hospedar o site, que é publicado de novo a cada atualização da branch `main`
+- React com Vite nas telas (pasta `src`)
+- Supabase (PostgreSQL) para o banco de dados e o login do Mestre
+- Netlify para hospedar o site, que é gerado e publicado de novo a cada atualização da branch `main`
 
 ## Segurança e privacidade
 
-- O aluno não acessa as tabelas do banco. Ele só usa três funções: entrar na sessão, buscar as questões e responder.
+- O aprendiz não acessa as tabelas do banco. Ele só usa três funções: entrar na sessão, buscar as questões e responder.
 - A alternativa correta não é enviada para o celular. A correção é feita no banco, que devolve só se acertou ou errou.
-- Cada questão só pode ser respondida uma vez por aluno.
-- Foi usado RLS (Row Level Security) em todas as tabelas, então cada professora só vê as próprias sessões e alunos.
-- Do aluno é guardado só o apelido e as respostas.
+- Cada questão só pode ser respondida uma vez por aprendiz.
+- Foi usado RLS (Row Level Security) em todas as tabelas, então cada Mestre só vê as próprias salas e aprendizes.
+- Do aprendiz é guardado só o apelido e as respostas.
 - A chave que aparece no `config.js` é a chave pública do Supabase. A chave secreta não é usada no site.
 
 ## Banco de dados
@@ -43,38 +45,34 @@ O DER e o modelo lógico estão em `docs/banco-de-dados.md`.
 
 ```
 src/
-  index.html         tela inicial
-  login.html         login da professora
-  painel.html        criar e listar sessões
-  entrar.html        entrada do aluno
-  quiz.html          o jogo
-  relatorio.html     relatório da sessão
-  diagnostico.html   testa a ligação com o banco
-  css/style.css
-  js/                um arquivo para cada tela + app.js (comum) e config.js
+  App.jsx            rotas (qual tela aparece em cada endereço)
+  config.js          endereço do Supabase e chave pública
+  lib/supabase.js    conexão com o banco
+  pages/             uma tela por arquivo: Inicio, MestreEntrar, MestreCadastro,
+                     Painel, Relatorio, AprendizEntrar, Quiz, Diagnostico...
+  styles.css
 supabase/
-  schema.sql         tabelas, segurança, funções e views
-  seed.sql           12 questões de Português (5º ano)
-  professora.sql     liga a conta de login à tabela professor
-  demo.sql           alunos fictícios para demonstração
-docs/                requisitos, banco de dados, roteiro e explicação do código
+  schema.sql         tabelas, segurança, funções, views e o gatilho de cadastro
+  seed.sql           questões iniciais
+  demo.sql           aprendizes fictícios para demonstração
+docs/                requisitos, banco de dados e configuração do Supabase
 ```
 
 ## Rodar localmente
 
 ```bash
-cd src
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Depois é só abrir http://localhost:8000. Para criar o banco do zero, ver `docs/configurar-supabase.md`.
+Depois é só abrir o endereço que aparecer no terminal (normalmente http://localhost:5173). Para criar o banco do zero, ver `docs/configurar-supabase.md`.
 
 ## Próximos passos
 
 - Outros tipos de jogo além do quiz
 - Cadastro de questões pela tela
 - Mais disciplinas e séries
-- QR Code para entrar na sessão
+- QR Code para entrar na sala
 
 ## Observação
 

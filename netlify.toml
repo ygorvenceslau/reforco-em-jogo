@@ -1,2 +1,33 @@
 [build]
-  publish = "src"
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Endereços da versão antiga do site (links já compartilhados continuam funcionando).
+[[redirects]]
+  from = "/entrar.html"
+  to = "/jogar"
+  status = 301
+
+[[redirects]]
+  from = "/login.html"
+  to = "/mestre/entrar"
+  status = 301
+
+[[redirects]]
+  from = "/painel.html"
+  to = "/mestre"
+  status = 301
+
+[[redirects]]
+  from = "/diagnostico.html"
+  to = "/diagnostico"
+  status = 301
+
+# Todas as outras rotas são do React (single page app).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
