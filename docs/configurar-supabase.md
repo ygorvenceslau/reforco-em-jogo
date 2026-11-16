@@ -13,20 +13,20 @@ Tempo: uns 15 minutos. Faça na ordem. Todos os arquivos `.sql` **podem ser roda
 3. Nova query: cole `supabase/seed.sql` inteiro e clique em **Run**.
 4. Confira em **Table Editor**: a tabela `questao` deve ter 12 linhas.
 
-## 3. Criar a conta da professora
-1. **Authentication > Users > Add user > Create new user**.
-2. Digite e-mail e senha e **marque "Auto Confirm User"**.
-3. SQL Editor > nova query > cole `supabase/professora.sql`, troque o e-mail, o nome e a escola nas 3 linhas do topo e clique em **Run**. Embaixo deve aparecer uma linha com o nome dela.
+## 3. Contas de Mestre
+As contas são criadas pela própria tela de cadastro do site (`/mestre/cadastro`). O `schema.sql` tem um gatilho que registra cada conta nova na tabela `professor` automaticamente.
+
+**Confirmação de e-mail:** por padrão o Supabase pede que a pessoa confirme o e-mail antes de entrar, e o envio de e-mails do plano grátis tem um limite baixo por hora. Para testes e demonstrações, desligue em **Authentication > Sign In / Providers > Email > Confirm email**. Antes de abrir para o público, o ideal é ligar de novo e configurar um serviço de e-mail próprio.
 
 ## 4. Ligar o site ao banco
 1. **Project Settings > API Keys** (ou **Settings > API** em projetos antigos).
 2. Copie a **Project URL** (`https://xxxx.supabase.co`, às vezes fica em **Settings > Data API**).
 3. Copie a chave **anon** (aba "Legacy API keys") ou a **publishable** (`sb_publishable_...`).
-4. Cole as duas em `src/js/config.js`. **Nunca use a `service_role` / `sb_secret_...`.**
+4. Cole as duas em `src/config.js`. **Nunca use a `service_role` / `sb_secret_...`.**
 5. Faça commit e push. O Netlify publica de novo sozinho.
 
 ## 5. Conferir
-Abra `diagnostico.html` no site. Cada item mostra ✔ ou ✖ e o que fazer. Faça login e abra o diagnóstico de novo para testar a parte da professora.
+Abra `/diagnostico` no site. Cada item mostra ✔ ou ✖ e o que fazer. Faça login e abra o diagnóstico de novo para testar a parte da professora.
 
 ## Problemas comuns
 | O que aparece | Causa | Solução |
@@ -34,8 +34,8 @@ Abra `diagnostico.html` no site. Cada item mostra ✔ ou ✖ e o que fazer. Faç
 | `relation "..." already exists` | Versão antiga do schema | Use o `schema.sql` atual: ele pode ser rodado de novo. |
 | `relation "habilidade" does not exist` ao rodar o seed | Schema não foi rodado (ou deu erro no meio) | Rode `schema.sql` inteiro primeiro e confira o "Success". |
 | Login: "E-mail ou senha incorretos" | Senha errada ou e-mail diferente | Em Authentication > Users, use "Send password recovery" ou apague e crie de novo. |
-| Login: "Conta não confirmada" | Faltou "Auto Confirm User" | No usuário, clique em "Confirm user" (ou recrie marcando a opção). |
-| Painel: "Sua conta ainda não está cadastrada como professora" | Faltou o passo 3.3 | Rode `professora.sql` com o mesmo e-mail do login. |
+| Login: "Confirme seu e-mail" | Confirmação de e-mail ligada | Clique no link do e-mail, ou desligue a confirmação (passo 3). |
+| Diagnóstico: "Conta de Mestre registrada" com ✖ | O gatilho de cadastro não foi instalado | Rode `schema.sql` de novo: ele instala o gatilho e registra as contas que já existem. |
 | `Invalid API key` / nada carrega | URL e chave de projetos diferentes, ou chave cortada | Copie as duas de novo, do mesmo projeto, sem espaços. |
 | `permission denied for table ...` | Permissões da API | Rode `schema.sql` de novo (ele libera o acesso no fim). |
 | Aluno: "Não há questões nesta sessão" | Seed não rodou | Rode `seed.sql`. |

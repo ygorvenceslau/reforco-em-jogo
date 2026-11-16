@@ -1,3 +1,5 @@
+> **Atenção:** este guia descreve a versão anterior do site (HTML puro, pasta `src/js`). Ele será atualizado para a versão em React ao fim do desenvolvimento da masmorra.
+
 # Explicação do código (para a apresentação)
 
 Guia para explicar e defender o projeto na apresentação. Leia junto com o código aberto no VS Code: os arquivos de `src/js/` e o `supabase/schema.sql` têm comentários explicando cada parte.

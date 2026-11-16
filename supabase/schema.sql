@@ -228,3 +228,29 @@ grant select on habilidade to anon, authenticated;
 grant select on professor, questao, participante, resposta to authenticated;
 grant select, insert, update, delete on sessao to authenticated;
 grant select on v_acertos_por_aluno, v_acertos_por_assunto to authenticated;
+
+-- Cadastro de Mestre pela tela: quando uma conta nova é criada no Supabase Auth,
+-- este gatilho cria a linha na tabela professor com o nome e a escola do formulário.
+-- (Os dados chegam em raw_user_meta_data, enviados pelo signUp do site.)
+create or replace function criar_mestre_ao_cadastrar() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into professor (id, nome, escola)
+  values (
+    new.id,
+    coalesce(nullif(trim(new.raw_user_meta_data->>'nome'), ''), split_part(new.email, '@', 1)),
+    nullif(trim(new.raw_user_meta_data->>'escola'), '')
+  )
+  on conflict (id) do nothing;
+  return new;
+end $$;
+
+drop trigger if exists ao_criar_conta on auth.users;
+create trigger ao_criar_conta after insert on auth.users
+  for each row execute function criar_mestre_ao_cadastrar();
+
+-- Contas criadas antes do gatilho também viram Mestre (sem mexer em quem já existe).
+insert into professor (id, nome, escola)
+select u.id, split_part(u.email, '@', 1), null
+from auth.users u
+where not exists (select 1 from professor p where p.id = u.id);
