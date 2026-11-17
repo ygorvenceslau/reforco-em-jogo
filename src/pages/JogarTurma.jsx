@@ -9,6 +9,7 @@ import { fonteSala } from "../masmorra/fontes.js";
 import { ondasDe } from "../masmorra/dados.js";
 import { novoBaralho } from "../masmorra/regras.js";
 import Questao, { BarraVida } from "../masmorra/Questao.jsx";
+import { EfeitoAtaque } from "../masmorra/Efeitos.jsx";
 import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
@@ -131,8 +132,12 @@ export default function JogarTurma() {
     const q = baralho[indice];
     conteudo = (
       <>
-        <div className="arena chefao">
-          <div className="monstro">{chefao.icone}</div>
+        <div className="arena chefao cenario-trono" style={{ "--cor": chefao.cor }}>
+          <div className="palco">
+            <div className={"monstro" + (resposta?.acertou ? " levou-golpe" : "")} key={"m" + meus.total}>{chefao.icone}</div>
+            <div className="sombra" />
+            {resposta?.acertou && <EfeitoAtaque key={"fx" + meus.total} classe="guerreiro" />}
+          </div>
           <p className="nome-monstro">{chefao.nome}</p>
           <BarraVida atual={vida} max={vidaMax} />
         </div>

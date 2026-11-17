@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { CLASSES, POCOES, medalha, ondasDe } from "./dados.js";
 import { regras, estadoInicial, resumoPorAssunto } from "./regras.js";
 import Questao, { BarraVida } from "./Questao.jsx";
+import { EfeitoAtaque, EfeitoEscudo, EfeitoGarras } from "./Efeitos.jsx";
 import { som, BotaoSom } from "./sons.jsx";
 import "./masmorra.css";
 
@@ -74,18 +75,28 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
         </span>
       </div>
 
-      <div className={"arena" + (onda.chefao ? " chefao" : "")}>
+      <div className={"arena cenario-" + onda.cenario + (onda.chefao ? " chefao" : "")} style={{ "--cor": onda.cor }}>
+        <span className="tocha esquerda" aria-hidden="true">🔥</span>
+        <span className="tocha direita" aria-hidden="true">🔥</span>
+        <p className="lugar">{onda.lugar}</p>
         {jogo.respostasNaOnda === 0 && <div className="fala">“{onda.fala}”</div>}
-        <div
-          key={efeito?.id}
-          className={
-            "monstro" +
-            (derrotado ? " desencantado" : "") +
-            (efeito?.tipo === "acerto" || efeito?.tipo === "critico" ? " levou-golpe" : "") +
-            (efeito?.tipo === "erro" ? " atacou" : "")
-          }
-        >
-          {derrotado ? "✨" : onda.icone}
+        <div key={"p" + efeito?.id} className={"palco" + (efeito?.tipo === "critico" ? " tremer" : "")}>
+          <div
+            key={efeito?.id}
+            className={
+              "monstro" +
+              (derrotado ? " desencantado" : "") +
+              (efeito?.tipo === "acerto" || efeito?.tipo === "critico" ? " levou-golpe" : "") +
+              (efeito?.tipo === "erro" ? " atacou" : "")
+            }
+          >
+            {derrotado ? "✨" : onda.icone}
+          </div>
+          <div className="sombra" />
+          {(efeito?.tipo === "acerto" || efeito?.tipo === "critico") && (
+            <EfeitoAtaque key={"fx" + efeito.id} classe={jogo.classe.id} critico={efeito.tipo === "critico"} />
+          )}
+          {efeito?.tipo === "bloqueio" && <EfeitoEscudo key={"fx" + efeito.id} />}
         </div>
         {efeito && (efeito.tipo === "acerto" || efeito.tipo === "critico") && (
           <div key={"d" + efeito.id} className={"dano" + (efeito.tipo === "critico" ? " critico" : "")}>
@@ -96,7 +107,12 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
         <BarraVida atual={jogo.monstroVida} max={onda.vida} />
       </div>
 
-      {efeito?.tipo === "erro" && <div key={"t" + efeito.id} className="tela-treme" />}
+      {efeito?.tipo === "erro" && (
+        <>
+          <div key={"t" + efeito.id} className="tela-treme" />
+          <EfeitoGarras key={"g" + efeito.id} />
+        </>
+      )}
 
       <Questao
         questao={questao}
@@ -242,7 +258,11 @@ export default function Masmorra({ fonte, disciplina = "Língua Portuguesa", pro
   const [questoes, setQuestoes] = useState(null);
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const ondas = ondasDe(disciplina);
+  // Sorteia os monstros da partida (de novo a cada "Jogar de novo").
+  const [ondas, setOndas] = useState(() => ondasDe(disciplina, true));
+  useEffect(() => {
+    if (jogo.fase === "escolha") setOndas(ondasDe(disciplina, true));
+  }, [jogo.fase, disciplina]);
   const titulo = "Masmorra de " + disciplina;
   const marca = prototipo ? "Quizzes & Masmorras · protótipo" : "Quizzes & Masmorras";
 

@@ -1,43 +1,13 @@
-// Login do Mestre. Quem confere a senha é o Supabase Auth, não o nosso código.
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { sb } from "../lib/supabase.js";
+// Página de login do Mestre (/mestre/entrar).
+import { Link } from "react-router-dom";
+import FormLoginMestre from "../components/FormLoginMestre.jsx";
 
 export default function MestreEntrar() {
-  const navegar = useNavigate();
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
-  const [enviando, setEnviando] = useState(false);
-
-  async function entrar(e) {
-    e.preventDefault();
-    setErro("");
-    setEnviando(true);
-    const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password: senha });
-    setEnviando(false);
-    if (error) {
-      const m = error.message || "";
-      if (/invalid login credentials/i.test(m)) setErro("E-mail ou senha incorretos.");
-      else if (/not confirmed/i.test(m)) setErro("Confirme seu e-mail pelo link que enviamos antes de entrar.");
-      else setErro("Não conectou ao servidor. Tente de novo.");
-      return;
-    }
-    navegar("/mestre");
-  }
-
   return (
     <main>
       <p className="marca">Quizzes &amp; Masmorras</p>
       <h1>Entrar como Mestre</h1>
-      <form onSubmit={entrar}>
-        <label htmlFor="email">E-mail</label>
-        <input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} />
-        <label htmlFor="senha">Senha</label>
-        <input id="senha" type="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
-        {erro && <p className="erro" role="alert">{erro}</p>}
-        <button className="btn" type="submit" disabled={enviando}>{enviando ? "Entrando..." : "Entrar"}</button>
-      </form>
+      <FormLoginMestre />
       <p className="muted">Ainda não tem conta? <Link to="/mestre/cadastro">Criar conta de Mestre</Link></p>
       <Link className="btn outline" to="/">Voltar</Link>
     </main>

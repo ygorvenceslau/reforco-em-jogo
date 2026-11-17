@@ -68,3 +68,5 @@ textarea:focus-visible{outline:3px solid #F59E0B;outline-offset:2px}
 .opcao-radio input{width:18px;height:18px;margin:3px 0 0}
 .opcao-radio.marcada{border-color:var(--teal);background:var(--tint)}
 .opcao-radio small{display:block;color:var(--muted)}
+.campo-codigo{font-size:22px;font-weight:800;letter-spacing:2px;text-transform:uppercase}
+.campo-codigo::placeholder{letter-spacing:1px;font-weight:600;opacity:.45}

@@ -66,7 +66,17 @@ select v.* from (values
   ('Matemática', '8º ano', 'Potências e raízes'),
   ('Matemática', '8º ano', 'Expressões algébricas'),
   ('Matemática', '9º ano', 'Equações do 2º grau'),
-  ('Matemática', '9º ano', 'Teorema de Pitágoras')
+  ('Matemática', '9º ano', 'Teorema de Pitágoras'),
+  ('Tecnologia e Computação', '5º ano', 'Partes do computador'),
+  ('Tecnologia e Computação', '5º ano', 'Segurança na internet'),
+  ('Tecnologia e Computação', '6º ano', 'Pensamento computacional'),
+  ('Tecnologia e Computação', '6º ano', 'Arquivos e pastas'),
+  ('Tecnologia e Computação', '7º ano', 'Internet e redes'),
+  ('Tecnologia e Computação', '7º ano', 'Cidadania digital'),
+  ('Tecnologia e Computação', '8º ano', 'Lógica e algoritmos'),
+  ('Tecnologia e Computação', '8º ano', 'Dados e informação'),
+  ('Tecnologia e Computação', '9º ano', 'Segurança da informação'),
+  ('Tecnologia e Computação', '9º ano', 'Programação básica')
 ) as v(disciplina, serie, nome)
 where not exists (select 1 from habilidade h
   where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome);
@@ -840,6 +850,216 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em a² = b² + c², a letra "a" representa:', 'a hipotenusa', 'um cateto', 'um ângulo', 'a altura', 'A', '"a" é a hipotenusa, o lado oposto ao ângulo reto.')
 ),
 h as (select id from habilidade where disciplina = 'Matemática' and serie = '9º ano' and nome = 'Teorema de Pitágoras'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 5º ano · Partes do computador
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Qual parte do computador usamos para digitar letras?', 'Teclado', 'Monitor', 'Caixa de som', 'Impressora', 'A', 'O teclado é um dispositivo de entrada: com ele mandamos letras e números para o computador.'),
+  ('Qual destes é um dispositivo de SAÍDA?', 'Mouse', 'Teclado', 'Monitor', 'Microfone', 'C', 'O monitor mostra informações para nós: é saída. Mouse, teclado e microfone mandam informações para o computador: são entrada.'),
+  ('Para que serve o mouse?', 'Imprimir folhas', 'Apontar e clicar na tela', 'Guardar arquivos', 'Tocar música', 'B', 'O mouse move a setinha na tela e permite clicar nas coisas.'),
+  ('Onde ficam guardados os arquivos mesmo depois de desligar o computador?', 'No armazenamento (HD ou SSD)', 'No monitor', 'No mouse', 'Na tomada', 'A', 'O HD ou SSD guarda arquivos de forma permanente, mesmo com o computador desligado.'),
+  ('Qual destes é um programa (software)?', 'Teclado', 'Navegador de internet', 'Cabo USB', 'Monitor', 'B', 'Software é o programa, a parte que não dá para tocar. O navegador é um programa; os outros são peças (hardware).')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Partes do computador'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 5º ano · Segurança na internet
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Um desconhecido pede seu endereço num jogo online. O que fazer?', 'Passar o endereço', 'Não passar e avisar um adulto', 'Mandar uma foto da casa', 'Pedir o endereço dele', 'B', 'Dados pessoais não se passam para desconhecidos. Avise um adulto de confiança.'),
+  ('Qual é a senha mais segura?', '123456', 'seunome', 'Gato#Azul72!', 'senha', 'C', 'Senhas fortes misturam letras maiúsculas e minúsculas, números e símbolos, e não usam o seu nome.'),
+  ('Com quem você pode compartilhar sua senha?', 'Com os amigos da escola', 'Com ninguém, só com seus responsáveis', 'Com quem pedir no chat', 'Com todo mundo', 'B', 'A senha é secreta. No máximo, seus pais ou responsáveis podem saber.'),
+  ('Apareceu uma mensagem: "Você ganhou um celular! Clique aqui". O que fazer?', 'Clicar rápido', 'Desconfiar e não clicar', 'Passar seus dados', 'Mandar para todos', 'B', 'Prêmios surpresa costumam ser golpes. Não clique e mostre para um adulto.'),
+  ('O que é cyberbullying?', 'Um jogo de computador', 'Ofender ou humilhar alguém pela internet', 'Um tipo de vírus', 'Uma rede social', 'B', 'Cyberbullying é a agressão feita pela internet. Se acontecer com você ou com alguém, conte a um adulto.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Segurança na internet'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 6º ano · Pensamento computacional
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('O que é um algoritmo?', 'Um tipo de computador', 'Uma sequência de passos para resolver um problema', 'Um vírus', 'Um jogo', 'B', 'Algoritmo é um passo a passo, como uma receita de bolo.'),
+  ('Qual é a ordem certa para escovar os dentes?', 'Enxaguar, escovar, pôr pasta', 'Pôr pasta, escovar, enxaguar', 'Escovar, pôr pasta, enxaguar', 'Enxaguar, pôr pasta, guardar', 'B', 'Num algoritmo a ordem dos passos importa: primeiro a pasta, depois escovar, depois enxaguar.'),
+  ('Dividir um problema grande em partes menores se chama:', 'Decomposição', 'Impressão', 'Formatação', 'Download', 'A', 'Decomposição é quebrar um problema em partes menores e mais fáceis de resolver.'),
+  ('Perceber que 2, 4, 6, 8 aumenta de 2 em 2 é identificar um:', 'Padrão', 'Vírus', 'Arquivo', 'Cabo', 'A', 'Reconhecer padrões é uma das bases do pensamento computacional.'),
+  ('Um robô anda 1 casa a cada comando "frente". Para andar 3 casas, ele precisa de:', '1 comando', '2 comandos', '3 comandos', '4 comandos', 'C', 'Cada comando move 1 casa, então são 3 comandos "frente".')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Pensamento computacional'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 6º ano · Arquivos e pastas
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Para que servem as pastas no computador?', 'Organizar arquivos', 'Ligar o computador', 'Limpar a tela', 'Acessar a internet', 'A', 'Pastas organizam os arquivos, como gavetas de um armário.'),
+  ('Um arquivo "trabalho.docx" provavelmente é um:', 'Texto', 'Vídeo', 'Música', 'Jogo', 'A', '.docx é a extensão de documentos de texto.'),
+  ('Qual extensão costuma ser de uma imagem?', '.mp3', '.jpg', '.docx', '.exe', 'B', '.jpg e .png são imagens. .mp3 é música e .docx é texto.'),
+  ('O que acontece com um arquivo enviado para a lixeira?', 'Some para sempre na hora', 'Fica na lixeira até ela ser esvaziada', 'Vai para a internet', 'Vira outro arquivo', 'B', 'Na lixeira o arquivo ainda pode ser recuperado, até ela ser esvaziada.'),
+  ('Fazer uma cópia dos arquivos importantes em outro lugar se chama:', 'Backup', 'Download', 'Bug', 'Login', 'A', 'Backup é a cópia de segurança: se o original se perder, você ainda tem a cópia.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Arquivos e pastas'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 7º ano · Internet e redes
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('O que é a internet?', 'Um programa de texto', 'Uma rede que liga computadores do mundo todo', 'Um tipo de celular', 'Um antivírus', 'B', 'A internet é uma grande rede que conecta computadores e outros aparelhos no mundo inteiro.'),
+  ('Qual destes é um navegador?', 'Google Chrome', 'Teclado', 'Pen drive', 'Windows Paint', 'A', 'Navegador é o programa para acessar sites, como Chrome, Firefox e Edge.'),
+  ('O que significa fazer "download"?', 'Enviar um arquivo para a internet', 'Baixar um arquivo da internet para o aparelho', 'Apagar um arquivo', 'Desligar o computador', 'B', 'Download é baixar. O contrário, enviar, é upload.'),
+  ('O Wi-Fi permite:', 'Conectar à rede sem fio', 'Imprimir sem papel', 'Carregar a bateria', 'Aumentar a tela', 'A', 'Wi-Fi é uma conexão de rede sem fio, por ondas de rádio.'),
+  ('O cadeado ao lado do endereço do site indica que:', 'O site é proibido', 'A conexão é protegida (criptografada)', 'O site está fechado', 'O site é pago', 'B', 'O cadeado (HTTPS) mostra que os dados trocados com o site são protegidos.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Internet e redes'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 7º ano · Cidadania digital
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Antes de compartilhar uma notícia, você deve:', 'Compartilhar logo', 'Verificar se a fonte é confiável', 'Mudar o título', 'Mandar só para os amigos', 'B', 'Conferir a fonte ajuda a não espalhar notícias falsas (fake news).'),
+  ('Postar foto de um colega sem permissão é:', 'Normal', 'Falta de respeito com a privacidade dele', 'Obrigatório', 'Um jeito de ajudar', 'B', 'Cada pessoa decide sobre a própria imagem. Sempre peça permissão.'),
+  ('O que é "pegada digital"?', 'Um tipo de mouse', 'O rastro do que fazemos e postamos na internet', 'Uma marca na tela', 'Um aplicativo', 'B', 'Tudo o que postamos deixa rastros que podem ficar na internet por muito tempo.'),
+  ('Usar o trabalho de outra pessoa como se fosse seu é:', 'Plágio', 'Backup', 'Pesquisa', 'Download', 'A', 'Plágio é copiar sem dar crédito. Ao usar algo de alguém, cite a fonte.'),
+  ('Qual atitude é mais saudável com telas?', 'Usar o celular a noite toda', 'Fazer pausas e equilibrar com outras atividades', 'Nunca sair do jogo', 'Comer sempre na frente da tela', 'B', 'Pausas, sono e outras atividades ajudam a usar a tecnologia de forma saudável.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Cidadania digital'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 8º ano · Lógica e algoritmos
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('"SE estiver chovendo, ENTÃO leve guarda-chuva" é um exemplo de:', 'Condicional', 'Repetição', 'Variável', 'Arquivo', 'A', 'Uma condicional executa uma ação só se a condição for verdadeira.'),
+  ('"REPITA 10 vezes: pule" é um exemplo de:', 'Condicional', 'Laço de repetição', 'Vírus', 'Senha', 'B', 'O laço (loop) repete um comando várias vezes sem precisar escrever cada um.'),
+  ('Se x = 5, o que o algoritmo mostra? SE x > 3 mostre "grande" SENÃO mostre "pequeno"', 'grande', 'pequeno', '5', '3', 'A', '5 é maior que 3, então a condição é verdadeira e mostra "grande".'),
+  ('Um erro num programa é chamado de:', 'Bug', 'Byte', 'Link', 'Pixel', 'A', 'Bug é um defeito no programa. Corrigir é "depurar" (debug).'),
+  ('Para achar o maior número de uma lista, um algoritmo pode:', 'Comparar os números um a um', 'Desligar o computador', 'Apagar a lista', 'Escolher sempre o primeiro', 'A', 'Comparando um a um e guardando o maior até agora, chegamos ao maior de todos.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Lógica e algoritmos'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 8º ano · Dados e informação
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('A menor unidade de informação do computador é o:', 'Bit', 'Byte', 'Megabyte', 'Pixel', 'A', 'O bit vale 0 ou 1. Oito bits formam um byte.'),
+  ('Quantos bits formam 1 byte?', '2', '4', '8', '10', 'C', '1 byte = 8 bits.'),
+  ('Qual é maior?', '1 KB', '1 MB', '1 GB', '1 byte', 'C', 'Em ordem: byte < KB < MB < GB. O gigabyte é o maior.'),
+  ('No sistema binário, os computadores usam só os algarismos:', '0 e 1', '1 e 2', '0 a 9', 'A e B', 'A', 'Binário tem só dois algarismos: 0 e 1, como desligado e ligado.'),
+  ('Os pequenos pontos que formam uma imagem na tela se chamam:', 'Pixels', 'Bytes', 'Pastas', 'Links', 'A', 'Pixel é cada pontinho colorido que forma a imagem.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Dados e informação'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 9º ano · Segurança da informação
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Phishing é:', 'Um jogo de pescaria', 'Um golpe que tenta roubar dados com mensagens falsas', 'Um antivírus', 'Um tipo de backup', 'B', 'No phishing, o golpista finge ser um banco ou loja para pegar senhas e dados.'),
+  ('A verificação em duas etapas serve para:', 'Deixar o celular mais rápido', 'Pedir uma confirmação extra além da senha', 'Apagar arquivos', 'Baixar jogos', 'B', 'Mesmo que descubram sua senha, ainda precisam do código extra para entrar.'),
+  ('Qual atitude protege contra vírus?', 'Baixar programas de qualquer site', 'Manter o sistema e o antivírus atualizados', 'Desligar o antivírus', 'Abrir anexos desconhecidos', 'B', 'Atualizações corrigem falhas de segurança, e o antivírus bloqueia ameaças conhecidas.'),
+  ('Usar a mesma senha em todos os sites é:', 'Seguro', 'Arriscado: se uma vazar, todas as contas ficam expostas', 'Obrigatório', 'Recomendado pelos bancos', 'B', 'Senhas diferentes evitam que um vazamento abra todas as suas contas.'),
+  ('Ao usar um computador público, ao terminar você deve:', 'Deixar a conta aberta', 'Sair da conta (logout)', 'Salvar a senha no navegador', 'Desligar o monitor só', 'B', 'Sair da conta impede que a próxima pessoa use o seu login.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Segurança da informação'),
+novas as (
+  insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
+  select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
+  where not exists (select 1 from questao q
+    where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a and q.professor_id is null)
+  returning id
+)
+update questao q set explicacao = v.explicacao
+from v, h
+where q.habilidade_id = h.id and q.enunciado = v.enunciado and q.alt_a = v.a
+  and q.professor_id is null and q.explicacao is null;
+
+-- Tecnologia e Computação · 9º ano · Programação básica
+with v(enunciado, a, b, c, d, correta, explicacao) as (values
+  ('Em programação, uma variável serve para:', 'Guardar um valor', 'Ligar o computador', 'Desenhar a tela', 'Conectar ao Wi-Fi', 'A', 'Variável é como uma caixa com nome onde guardamos um valor para usar depois.'),
+  ('Depois de: pontos = 10; pontos = pontos + 5; quanto vale pontos?', '5', '10', '15', '105', 'C', 'Pontos começa em 10 e recebe ele mesmo mais 5: 15.'),
+  ('Um laço "para i de 1 até 3, mostre i" mostra:', '1 2 3', '3', '1', '0 1 2 3', 'A', 'O laço passa por i = 1, 2 e 3 e mostra cada valor.'),
+  ('Qual destas é uma linguagem de programação?', 'Python', 'Excel', 'Wi-Fi', 'Pen drive', 'A', 'Python é uma linguagem de programação muito usada para aprender.'),
+  ('Um texto entre aspas, como "Olá", no código é um valor do tipo:', 'Texto (string)', 'Número', 'Imagem', 'Pasta', 'A', 'Valores entre aspas são textos, chamados de strings.')
+),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Programação básica'),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h

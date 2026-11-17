@@ -47,7 +47,8 @@ O reforço escolar vira uma aventura: o aprendiz derrota monstros respondendo qu
 | `src/masmorra/Masmorra.jsx` | Telas da masmorra: classe, batalha, baú, derrota, vitória |
 | `src/masmorra/dados.js` | Classes, monstros, poções, recompensas e medalhas |
 | `supabase/schema.sql` | Tabelas, RLS, funções e views |
-| `supabase/seed.sql` | 187 questões padrão com explicação |
+| `supabase/seed.sql` | 237 questões padrão com explicação (gerado por `supabase/gerador/`) |
+| `src/masmorra/Efeitos.jsx` | Efeitos de ataque: corte (guerreiro), magia (mago), flecha (arqueiro) e garras (erro) |
 
 ## 5. As regras do jogo (`src/masmorra/regras.js`)
 Tudo o que acontece na batalha passa por **uma função só**, `regras(jogo, acao)`. Ela recebe o estado atual e uma ação e devolve o estado novo. No React isso se chama *reducer* (`useReducer`).
