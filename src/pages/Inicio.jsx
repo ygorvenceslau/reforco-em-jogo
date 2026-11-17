@@ -12,6 +12,9 @@ export default function Inicio() {
       <Link className="btn outline" to="/jogar">Sou Aprendiz</Link>
       <p className="muted dica">Tenho um código e quero jogar.</p>
 
+      <Link className="btn" style={{ background: "#2c2640" }} to="/masmorra">⚔️ Experimentar a masmorra (demonstração)</Link>
+      <p className="muted dica">Jogue agora, sem conta e sem código.</p>
+
       <p className="muted" style={{ textAlign: "center" }}>
         <Link to="/privacidade">Privacidade</Link>
       </p>

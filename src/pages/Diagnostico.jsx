@@ -55,7 +55,9 @@ async function verificar() {
 export default function Diagnostico() {
   const [itens, setItens] = useState(null);
   const rodar = () => { setItens(null); verificar().then(setItens); };
-  useEffect(rodar, []);
+  useEffect(() => {
+    rodar();
+  }, []);
 
   return (
     <main>
