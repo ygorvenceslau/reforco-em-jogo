@@ -1,0 +1,170 @@
+/* Visual da masmorra: pedra escura, pergaminho e ouro. Estilo cartoon, sem violência. */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap");
+
+.masmorra {
+  --pedra: #1f1b2e;
+  --pedra-2: #2c2640;
+  --pergaminho: #f7edd4;
+  --pergaminho-borda: #b08a4a;
+  --tinta: #3a2a14;
+  --ouro: #e9b949;
+  --ouro-escuro: #a87b1c;
+  --verde: #2f8f5b;
+  --vermelho: #b83a3a;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 50% 0%, #3b3358 0%, transparent 60%),
+    repeating-linear-gradient(0deg, transparent 0 46px, rgba(0, 0, 0, 0.18) 46px 48px),
+    var(--pedra);
+  color: #f3ecff;
+  padding: 18px 16px 40px;
+}
+.masmorra .tela { max-width: 520px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+.masmorra .tela.larga { max-width: 1040px; }
+.masmorra .centro { text-align: center; }
+
+.marca-masmorra { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: #b9aedb; }
+.titulo-masmorra { font-family: Cinzel, Georgia, serif; font-weight: 900; color: var(--ouro); margin: 0; font-size: 28px; line-height: 1.2; text-shadow: 0 2px 0 #000; }
+.subtitulo { font-family: Cinzel, Georgia, serif; color: var(--ouro); margin: 6px 0 0; font-size: 20px; }
+.texto-claro { color: #ddd4f5; margin: 0; }
+.mini { font-size: 14px; color: #6d5a3a; margin: 4px 0; }
+.mini.claro { color: #b9aedb; }
+.link-claro { color: #cbbcff; text-align: center; font-weight: 700; }
+
+.pergaminho {
+  background: var(--pergaminho);
+  color: var(--tinta);
+  border: 3px solid var(--pergaminho-borda);
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+}
+.pergaminho h2 { font-family: Cinzel, Georgia, serif; font-size: 20px; margin: 0 0 8px; color: #6b4a12; }
+.lista-regras { margin: 0; padding-left: 4px; list-style: none; display: grid; gap: 6px; }
+
+.classes { display: grid; gap: 10px; }
+.carta-classe {
+  display: grid; grid-template-columns: 56px 1fr; grid-template-rows: auto auto; column-gap: 12px; text-align: left;
+  background: var(--pedra-2); color: #f3ecff; border: 2px solid #5a4f80; border-radius: 14px; padding: 12px 14px;
+  font: inherit; cursor: pointer; transition: transform .12s, border-color .12s;
+}
+.carta-classe:hover, .carta-classe:focus-visible { border-color: var(--ouro); transform: translateY(-2px); }
+.carta-classe .icone-grande { grid-row: span 2; font-size: 40px; align-self: center; }
+.carta-classe strong { font-size: 18px; color: var(--ouro); }
+.carta-classe span:last-child { color: #d6ccf2; font-size: 15px; }
+.tipo-recompensa { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #b9aedb; }
+
+.botao-ouro {
+  display: block; width: 100%; border: 0; border-radius: 14px; padding: 15px; cursor: pointer;
+  font: inherit; font-weight: 900; font-size: 18px; color: #2b1d05;
+  background: linear-gradient(#f5d77a, var(--ouro)); box-shadow: 0 5px 0 var(--ouro-escuro);
+}
+.botao-ouro:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ouro-escuro); }
+
+/* Batalha */
+.topo-batalha { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-weight: 800; }
+.onda { background: #4b3f73; padding: 4px 12px; border-radius: 99px; font-size: 14px; }
+.heroi-info { font-size: 20px; display: flex; align-items: center; gap: 4px; }
+.coracoes { display: inline-flex; gap: 1px; font-size: 18px; }
+.coracoes .vazio { opacity: .45; }
+.escudo-ativo { margin-left: 4px; animation: brilho 1s infinite alternate; }
+
+.arena {
+  position: relative; text-align: center; padding: 18px 12px 14px; border-radius: 18px;
+  background: radial-gradient(circle at 50% 70%, #463b6b, #2a2440 70%); border: 2px solid #5a4f80;
+}
+.arena.chefao { border-color: var(--ouro); box-shadow: 0 0 24px rgba(233, 185, 73, .35); }
+.monstro { font-size: 84px; line-height: 1.1; display: inline-block; animation: flutuar 2.4s ease-in-out infinite; }
+.arena.chefao .monstro { font-size: 104px; }
+.monstro.levou-golpe { animation: golpe .45s ease-out; }
+.monstro.atacou { animation: investida .5s ease-out; }
+.monstro.desencantado { animation: desencantar .9s ease-out forwards; }
+.nome-monstro { margin: 4px 0 8px; font-family: Cinzel, Georgia, serif; font-weight: 700; color: #fff3cf; }
+.fala {
+  display: inline-block; max-width: 100%; margin-bottom: 6px;
+  background: #fff; color: #2b2340; font-weight: 700; font-size: 14px; padding: 6px 12px; border-radius: 12px; animation: aparecer .4s;
+}
+.dano {
+  position: absolute; top: 34%; left: 50%; transform: translateX(-50%);
+  font-weight: 900; font-size: 28px; color: #fff; text-shadow: 0 2px 0 #000; animation: subir 1s ease-out forwards; pointer-events: none;
+}
+.dano.critico { color: var(--ouro); font-size: 32px; }
+
+.barra-vida { position: relative; height: 18px; background: #14111f; border-radius: 99px; overflow: hidden; border: 2px solid #000; }
+.barra-vida > div { height: 100%; background: linear-gradient(#ff8a8a, var(--vermelho)); transition: width .4s ease; }
+.barra-vida > span { position: absolute; inset: 0; font-size: 12px; font-weight: 900; line-height: 14px; color: #fff; text-shadow: 0 1px 0 #000; }
+.barra-vida.grande { height: 28px; }
+.barra-vida.grande > span { font-size: 16px; line-height: 24px; }
+
+.tag-assunto { display: inline-block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #6b4a12; background: #ecd9a8; padding: 2px 8px; border-radius: 99px; }
+.enunciado { font-size: 19px; font-weight: 800; line-height: 1.4; margin: 8px 0 12px; }
+.alternativas { display: grid; gap: 8px; }
+.alternativa {
+  display: flex; gap: 10px; align-items: center; width: 100%; text-align: left; font: inherit; font-size: 17px; font-weight: 700;
+  padding: 12px; border-radius: 12px; cursor: pointer; background: #fffaf0; color: var(--tinta); border: 2px solid #d9c08a;
+}
+.alternativa:not(:disabled):hover { border-color: var(--ouro-escuro); }
+.alternativa .letra { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #ecd9a8; font-weight: 900; }
+.alternativa.certa { background: #def5e6; border-color: var(--verde); color: #14492c; }
+.alternativa.errada { background: #fbe1e1; border-color: var(--vermelho); color: #6e1c1c; }
+.alternativa.apagada, .alternativa.eliminada { opacity: .45; }
+.alternativa.eliminada { text-decoration: line-through; }
+
+.aviso-batalha { margin: 0; font-weight: 900; font-size: 18px; text-align: center; padding: 8px; border-radius: 12px; }
+.aviso-batalha.bom { color: #b8ffd0; }
+.aviso-batalha.ruim { color: #ffc2c2; }
+.aviso-batalha.neutro { color: #6b4a12; }
+.explicacao { background: var(--pergaminho); color: var(--tinta); border: 3px solid var(--pergaminho-borda); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; animation: aparecer .3s; }
+.explicacao .aviso-batalha.ruim { color: var(--vermelho); }
+.explicacao p { margin: 0; }
+
+.sequencia { margin: 0; text-align: center; color: #cbbcff; font-weight: 700; font-size: 14px; }
+.cinto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pocao {
+  display: grid; justify-items: center; gap: 2px; padding: 8px 4px; border-radius: 12px; cursor: pointer; font: inherit; font-weight: 800; font-size: 13px;
+  background: var(--pedra-2); color: #f3ecff; border: 2px solid #5a4f80;
+}
+.pocao:not(:disabled):hover { border-color: var(--ouro); }
+.pocao:disabled { opacity: .4; cursor: not-allowed; }
+.icone-pocao { font-size: 20px; }
+.pocao .qtd { color: var(--ouro); }
+
+.tela-treme { position: fixed; inset: 0; pointer-events: none; animation: flash-vermelho .45s ease-out forwards; }
+
+/* Fim */
+.icone-enorme { font-size: 64px; }
+.placar { font-size: 20px; font-weight: 900; margin: 6px 0 0; }
+.tabela-masmorra { width: 100%; border-collapse: collapse; }
+.tabela-masmorra td { padding: 8px 4px; border-bottom: 1px solid #e3d1a3; }
+.masmorra .selo { display: inline-block; font-size: 13px; font-weight: 800; padding: 2px 10px; border-radius: 99px; }
+.masmorra .selo.ok { background: #def5e6; color: #14492c; }
+.masmorra .selo.reforcar { background: #fbe1e1; color: #6e1c1c; }
+.confete { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.confete span { position: absolute; top: -40px; font-size: 26px; animation: cair 2.8s ease-in forwards; }
+
+/* Modo turma */
+.duas-telas { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; align-items: start; }
+@media (max-width: 760px) { .duas-telas { grid-template-columns: 1fr; } }
+.lousa, .celular { border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+.lousa { background: radial-gradient(circle at 50% 30%, #463b6b, #221d36 75%); border: 3px solid var(--ouro); text-align: center; }
+.celular { background: #15121f; border: 3px solid #5a4f80; }
+.rotulo { margin: 0; font-size: 13px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #b9aedb; }
+.chefao-grande { font-size: 130px; }
+.feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; align-content: start; text-align: left; min-height: 150px; }
+.feed li { background: rgba(255, 255, 255, .08); border-radius: 10px; padding: 6px 10px; font-weight: 700; animation: aparecer .3s; }
+.feed li.voce { background: rgba(233, 185, 73, .25); color: #ffe7a6; }
+.feed li.vazio { color: #b9aedb; font-weight: 600; }
+
+@keyframes flutuar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes golpe { 0% { transform: translateX(0) scale(1); filter: brightness(1); } 25% { transform: translateX(-10px) scale(.95); filter: brightness(2.2); } 50% { transform: translateX(10px); } 100% { transform: translateX(0) scale(1); filter: brightness(1); } }
+@keyframes investida { 0% { transform: scale(1); } 40% { transform: scale(1.25) translateY(14px); } 100% { transform: scale(1); } }
+@keyframes desencantar { 0% { transform: scale(1) rotate(0); opacity: 1; } 60% { transform: scale(1.4) rotate(20deg); opacity: .8; } 100% { transform: scale(1.1); opacity: 1; } }
+@keyframes subir { 0% { opacity: 0; transform: translate(-50%, 10px); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50px); } }
+@keyframes aparecer { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes flash-vermelho { from { background: rgba(184, 58, 58, .35); } to { background: transparent; } }
+@keyframes brilho { from { filter: drop-shadow(0 0 0 var(--ouro)); } to { filter: drop-shadow(0 0 6px var(--ouro)); } }
+@keyframes cair { to { transform: translateY(110vh) rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .masmorra *, .masmorra *::before, .masmorra *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+}

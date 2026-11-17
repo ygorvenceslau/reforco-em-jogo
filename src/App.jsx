@@ -11,6 +11,8 @@ import Quiz from "./pages/Quiz.jsx";
 import Diagnostico from "./pages/Diagnostico.jsx";
 import Privacidade from "./pages/Privacidade.jsx";
 import NaoEncontrada from "./pages/NaoEncontrada.jsx";
+import Masmorra from "./masmorra/Masmorra.jsx";
+import ModoTurma from "./masmorra/ModoTurma.jsx";
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
       <Route path="/mestre/sessao/:id" element={<RequireMestre>{() => <Relatorio />}</RequireMestre>} />
       <Route path="/jogar" element={<AprendizEntrar />} />
       <Route path="/jogar/quiz" element={<Quiz />} />
+      <Route path="/masmorra" element={<Masmorra />} />
+      <Route path="/masmorra/turma" element={<ModoTurma />} />
       <Route path="/diagnostico" element={<Diagnostico />} />
       <Route path="/privacidade" element={<Privacidade />} />
       <Route path="*" element={<NaoEncontrada />} />
