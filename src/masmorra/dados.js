@@ -32,30 +32,84 @@ export const CLASSES = [
   },
 ];
 
-// Ondas da Masmorra da Língua Portuguesa. A última é o chefão.
+// As 3 ondas da masmorra: vida do monstro e cenário de cada uma. A última é o chefão.
+// As regras do jogo (regras.js) usam só a vida daqui; o monstro de cada onda é sorteado abaixo.
 export const ONDAS = [
-  { nome: "Monstrinho Troca-Letras", icone: "👾", vida: 3, fala: "Hehe! Vou bagunçar suas letras!" },
-  { nome: "Morcego Sem-Acento", icone: "🦇", vida: 4, fala: "Shhh... roubei todos os acentos!" },
-  { nome: "Dragão da Gramática", icone: "🐉", vida: 6, fala: "Só passa quem sabe a língua!", chefao: true },
+  { vida: 3, cenario: "entrada", lugar: "Entrada da masmorra" },
+  { vida: 4, cenario: "corredor", lugar: "Corredor das sombras" },
+  { vida: 6, cenario: "trono", lugar: "Sala do trono", chefao: true },
 ];
 
-// Monstros de cada disciplina. A vida de cada onda é sempre a mesma de ONDAS (as regras usam ONDAS).
+// Monstros por disciplina: para cada onda, uma lista (um é sorteado a cada partida).
+// "cor" é a cor do brilho em volta do monstro. Estilo cartoon: ninguém se machuca, os monstros são desencantados.
 const MONSTROS = {
-  "Língua Portuguesa": ONDAS,
+  "Língua Portuguesa": [
+    [
+      { nome: "Monstrinho Troca-Letras", icone: "👾", cor: "#b07cff", fala: "Hehe! Vou bagunçar suas letras!" },
+      { nome: "Sapo Soletrador", icone: "🐸", cor: "#6bdc7a", fala: "Croac! Soletre se for capaz!" },
+      { nome: "Lagartixa Come-Vírgula", icone: "🦎", cor: "#9be15d", fala: "Nhac! Comi todas as vírgulas!" },
+    ],
+    [
+      { nome: "Morcego Sem-Acento", icone: "🦇", cor: "#8f7cff", fala: "Shhh... roubei todos os acentos!" },
+      { nome: "Fantasma do Ponto Final", icone: "👻", cor: "#d9e6ff", fala: "Buuu! Sumi com os pontos finais!" },
+      { nome: "Aranha da Crase", icone: "🕷️", cor: "#c9a0ff", fala: "Teci uma teia de crases!" },
+    ],
+    [
+      { nome: "Dragão da Gramática", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem sabe a língua!" },
+      { nome: "Troll do Dicionário", icone: "🧌", cor: "#a3d977", fala: "Grrr! Conheço todas as palavras!" },
+      { nome: "Dragão das Rimas", icone: "🐲", cor: "#ff9f5e", fala: "Rima comigo se tiver coragem!" },
+    ],
+  ],
   "Matemática": [
-    { nome: "Monstrinho Conta-Errada", icone: "👾", vida: 3, fala: "Hehe! 2 + 2 = 5!" },
-    { nome: "Polvo das Contas", icone: "🐙", vida: 4, fala: "Oito braços, oito contas difíceis!" },
-    { nome: "Dragão dos Números", icone: "🐉", vida: 6, fala: "Só passa quem domina os números!", chefao: true },
+    [
+      { nome: "Monstrinho Conta-Errada", icone: "👾", cor: "#b07cff", fala: "Hehe! 2 + 2 = 5!" },
+      { nome: "Lesma da Tabuada", icone: "🐌", cor: "#ffd166", fala: "Devagar... quanto é 7 × 8?" },
+      { nome: "Caranguejo dos Sinais", icone: "🦀", cor: "#ff7b6b", fala: "Mais vira menos, menos vira mais!" },
+    ],
+    [
+      { nome: "Polvo das Contas", icone: "🐙", cor: "#ff8ad1", fala: "Oito braços, oito contas difíceis!" },
+      { nome: "Coruja dos Problemas", icone: "🦉", cor: "#e0b07a", fala: "Huu! Problema difícil à vista!" },
+      { nome: "Lobo do Resto", icone: "🐺", cor: "#9fb4d6", fala: "Auuu! Quero o resto da divisão!" },
+    ],
+    [
+      { nome: "Dragão dos Números", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem domina os números!" },
+      { nome: "Rex da Geometria", icone: "🦖", cor: "#7be0a0", fala: "ROAR! Quantos lados tem um hexágono?" },
+      { nome: "Dragão das Equações", icone: "🐲", cor: "#ff9f5e", fala: "Descubra o x ou não passa!" },
+    ],
+  ],
+  "Tecnologia e Computação": [
+    [
+      { nome: "Bug Saltitante", icone: "🐛", cor: "#9be15d", fala: "Bzzz! Entrei no seu código!" },
+      { nome: "Vírus Espirrento", icone: "🦠", cor: "#6be0c8", fala: "Atchim! Vou infectar seus arquivos!" },
+      { nome: "Pixel Fujão", icone: "👾", cor: "#b07cff", fala: "Pega o pixel se for capaz!" },
+    ],
+    [
+      { nome: "Robô Desconfigurado", icone: "🤖", cor: "#8fd3ff", fala: "Bip bop... erro 404!" },
+      { nome: "Cobra do Phishing", icone: "🐍", cor: "#9be15d", fala: "Ssss... clique neste link..." },
+      { nome: "Fantasma do Spam", icone: "👻", cor: "#d9e6ff", fala: "Buuu! Mil e-mails para você!" },
+    ],
+    [
+      { nome: "Dragão do Firewall", icone: "🐲", cor: "#ff9f5e", fala: "Só passa quem navega com segurança!" },
+      { nome: "Dragão Binário", icone: "🐉", cor: "#5ee07a", fala: "01001111... você decifra?" },
+      { nome: "Disco Voador do Malware", icone: "🛸", cor: "#8fd3ff", fala: "Vou abduzir suas senhas!" },
+    ],
   ],
 };
 const MONSTROS_GERAIS = [
-  { nome: "Monstrinho Esquecido", icone: "👾", vida: 3, fala: "Hehe! Você não vai lembrar!" },
-  { nome: "Morcego da Dúvida", icone: "🦇", vida: 4, fala: "Shhh... será que é essa mesmo?" },
-  { nome: "Dragão do Saber", icone: "🐉", vida: 6, fala: "Só passa quem estudou!", chefao: true },
+  [{ nome: "Monstrinho Esquecido", icone: "👾", cor: "#b07cff", fala: "Hehe! Você não vai lembrar!" }],
+  [{ nome: "Morcego da Dúvida", icone: "🦇", cor: "#8f7cff", fala: "Shhh... será que é essa mesmo?" }],
+  [{ nome: "Dragão do Saber", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem estudou!" }],
 ];
 
-export function ondasDe(disciplina) {
-  return MONSTROS[disciplina] || MONSTROS_GERAIS;
+// Monta as 3 ondas de uma disciplina. Com sortear = true, cada onda ganha um monstro aleatório da lista
+// (cada partida fica diferente); sem sortear, usa sempre o primeiro (ex.: o chefão da lousa).
+export function ondasDe(disciplina, sortear = false) {
+  const listas = MONSTROS[disciplina] || MONSTROS_GERAIS;
+  return ONDAS.map((onda, i) => {
+    const lista = listas[i];
+    const monstro = sortear ? lista[Math.floor(Math.random() * lista.length)] : lista[0];
+    return { ...onda, ...monstro };
+  });
 }
 
 export const POCOES = {

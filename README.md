@@ -18,7 +18,7 @@ Com o ensino integral não existe mais contraturno, então o aluno que precisa d
 4. **Turma contra o chefão:** o Mestre projeta a lousa e todos atacam o mesmo chefão pelo celular. A turma vence junta, e a lousa mostra só os acertos.
 5. No relatório o Mestre vê os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%.
 
-O site já vem com 187 questões padrão (Língua Portuguesa e Matemática, 1º ao 9º ano), todas com explicação. O Mestre pode criar as próprias questões ou duplicar e adaptar uma padrão.
+O site já vem com 237 questões padrão, todas com explicação: Língua Portuguesa e Matemática (1º ao 9º ano) e Tecnologia e Computação (5º ao 9º ano, seguindo os eixos da BNCC Computação: mundo digital, cultura digital e pensamento computacional). As questões ficam em `supabase/gerador/questoes.py`, que gera o `seed.sql`. O Mestre pode criar as próprias questões ou duplicar e adaptar uma padrão.
 
 Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do modo turma).
 

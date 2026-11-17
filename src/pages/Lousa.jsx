@@ -8,6 +8,7 @@ import { Link, useParams } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 import { ondasDe } from "../masmorra/dados.js";
 import { BarraVida } from "../masmorra/Questao.jsx";
+import { EfeitoAtaque } from "../masmorra/Efeitos.jsx";
 import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
@@ -130,10 +131,14 @@ export default function Lousa() {
 
         {estado.iniciada && (
           <div className="duas-telas">
-            <section className="lousa">
+            <section className="lousa" style={{ "--cor": chefao.cor }}>
               <p className="rotulo">Código {sala.codigo} · {estado.aprendizes} aprendiz(es)</p>
-              <div className={"monstro chefao-grande" + (vencida ? " desencantado" : "")} key={estado.dano}>
-                {vencida ? "✨" : chefao.icone}
+              <div className="palco">
+                <div className={"monstro chefao-grande" + (vencida ? " desencantado" : estado.dano ? " levou-golpe" : "")} key={estado.dano}>
+                  {vencida ? "✨" : chefao.icone}
+                </div>
+                <div className="sombra" />
+                {estado.dano > 0 && !vencida && <EfeitoAtaque key={"fx" + estado.dano} classe="guerreiro" />}
               </div>
               <p className="nome-monstro">{chefao.nome}</p>
               <BarraVida atual={vida} max={estado.vida_max} grande />

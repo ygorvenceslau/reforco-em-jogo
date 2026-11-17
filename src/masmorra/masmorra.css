@@ -173,7 +173,7 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .codigo-lousa { margin: 0; font-size: 84px; font-weight: 900; letter-spacing: 10px; color: var(--ouro); text-shadow: 0 4px 0 #000; }
 @media (max-width: 520px) { .codigo-lousa { font-size: 52px; letter-spacing: 6px; } }
 .topo-questao { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.botao-ouvir { font: inherit; font-size: 14px; font-weight: 800; color: #6b4a12; background: #ecd9a8; border: 2px solid #d9c08a; border-radius: 99px; padding: 4px 12px; cursor: pointer; }
+.botao-ouvir { flex: none; white-space: nowrap; font: inherit; font-size: 14px; font-weight: 800; color: #6b4a12; background: #ecd9a8; border: 2px solid #d9c08a; border-radius: 99px; padding: 4px 12px; cursor: pointer; }
 .botao-ouvir:hover { border-color: var(--ouro-escuro); }
 .botao-icone { font: inherit; font-weight: 800; font-size: 18px; background: rgba(255, 255, 255, .08); border: 2px solid #5a4f80; color: #fff; border-radius: 12px; padding: 4px 10px; cursor: pointer; }
 .botao-icone:hover { border-color: var(--ouro); }
@@ -182,3 +182,153 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .entrada-lousa { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; text-align: center; }
 @media (max-width: 760px) { .entrada-lousa { grid-template-columns: 1fr; } }
 .acoes-lousa { display: flex; gap: 8px; align-items: center; }
+
+/* ---------- Cenários das ondas ---------- */
+.arena { overflow: hidden; }
+.arena.cenario-entrada {
+  background:
+    radial-gradient(ellipse at 50% 95%, rgba(255, 170, 80, .28), transparent 55%),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, .16) 0 2px, transparent 2px 26px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .12) 0 2px, transparent 2px 52px),
+    linear-gradient(#3a3045, #2a2236);
+}
+.arena.cenario-corredor {
+  background:
+    radial-gradient(ellipse at 50% 90%, rgba(120, 170, 255, .25), transparent 55%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, .28) 0 22px, transparent 22px 86px),
+    linear-gradient(#26304a, #171b2c);
+}
+.arena.cenario-trono {
+  background:
+    radial-gradient(ellipse at 50% 85%, rgba(255, 120, 90, .3), transparent 60%),
+    repeating-linear-gradient(90deg, rgba(233, 185, 73, .08) 0 4px, transparent 4px 70px),
+    linear-gradient(#4a2233, #24141f);
+}
+.lugar { margin: 0 0 6px; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+.tocha { position: absolute; top: 36%; font-size: 24px; animation: chama 0.9s ease-in-out infinite alternate; filter: drop-shadow(0 0 10px rgba(255, 150, 60, .9)); }
+.tocha.esquerda { left: 10px; }
+.tocha.direita { right: 10px; animation-delay: .35s; }
+@keyframes chama { from { transform: scale(1) rotate(-3deg); opacity: .85; } to { transform: scale(1.12) rotate(3deg); opacity: 1; } }
+
+/* ---------- Monstro: palco, brilho e sombra ---------- */
+.palco { position: relative; display: flex; flex-direction: column; align-items: center; min-height: 112px; }
+.arena.chefao .palco { min-height: 132px; }
+.monstro { filter: drop-shadow(0 0 14px var(--cor, rgba(255, 255, 255, .4))); position: relative; z-index: 1; }
+.sombra { width: 90px; height: 14px; margin-top: -6px; border-radius: 50%; background: rgba(0, 0, 0, .45); filter: blur(3px); animation: sombra 2.4s ease-in-out infinite; }
+.arena.chefao .sombra { width: 120px; }
+@keyframes sombra { 0%, 100% { transform: scaleX(1); opacity: .5; } 50% { transform: scaleX(.8); opacity: .35; } }
+.palco.tremer { animation: tremer .4s linear; }
+@keyframes tremer { 0%, 100% { transform: translate(0); } 20% { transform: translate(-6px, 2px); } 40% { transform: translate(6px, -2px); } 60% { transform: translate(-4px, -2px); } 80% { transform: translate(4px, 2px); } }
+
+/* ---------- Efeitos de ataque ---------- */
+.fx { position: absolute; left: 50%; top: 42%; width: 0; height: 0; z-index: 2; pointer-events: none; }
+
+/* Guerreiro: cortes de espada */
+.fx-corte span {
+  position: absolute; left: 0; top: 0; width: 170px; height: 7px; border-radius: 6px;
+  background: linear-gradient(90deg, transparent, #fff 35%, #fff 65%, transparent);
+  box-shadow: 0 0 12px #fff, 0 0 22px var(--cor, #fff);
+  transform: translate(-50%, -50%) rotate(-35deg) scaleX(0); opacity: 0;
+  animation: corte .42s ease-out forwards;
+}
+.fx-corte span:nth-child(2) { --rot: 35deg; animation-delay: .12s; }
+.fx-corte span:nth-child(3) { --rot: 0deg; animation-delay: .24s; background: linear-gradient(90deg, transparent, #ffe08a 35%, #ffe08a 65%, transparent); }
+.fx-corte span:nth-child(1) { --rot: -35deg; }
+@keyframes corte {
+  0% { transform: translate(-50%, -50%) rotate(var(--rot)) scaleX(0); opacity: 1; }
+  45% { transform: translate(-50%, -50%) rotate(var(--rot)) scaleX(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) rotate(var(--rot)) scaleX(1.1); opacity: 0; }
+}
+
+/* Mago: anel mágico e faíscas */
+.fx-magia .anel {
+  position: absolute; left: 0; top: 0; width: 60px; height: 60px; border-radius: 50%;
+  border: 5px solid #c9a0ff; box-shadow: 0 0 18px #b07cff, inset 0 0 14px #b07cff;
+  transform: translate(-50%, -50%) scale(.2); opacity: 1; animation: anel .55s ease-out forwards;
+}
+.fx-magia .anel.segundo { border-color: #7fd1ff; animation-delay: .12s; }
+.fx-magia.critico .anel { border-color: #ffe08a; box-shadow: 0 0 24px #ffd166; }
+@keyframes anel { to { transform: translate(-50%, -50%) scale(2.6); opacity: 0; } }
+.fx-magia .faisca {
+  position: absolute; left: 0; top: 0; font-size: 20px; color: #e8d2ff; text-shadow: 0 0 8px #b07cff;
+  transform: translate(-50%, -50%) rotate(var(--ang)) translateY(0); animation: faisca .6s ease-out forwards;
+}
+@keyframes faisca { to { transform: translate(-50%, -50%) rotate(var(--ang)) translateY(-80px); opacity: 0; } }
+
+/* Arqueiro: flecha voando até o monstro */
+.fx-flecha .flecha {
+  position: absolute; left: 0; top: 0; width: 120px; height: 5px; border-radius: 3px;
+  background: linear-gradient(90deg, #c69a5a 0 18%, #e8d3a8 18%);
+  transform: translate(-260px, 70px) rotate(-16deg); opacity: 0; animation: flecha .32s ease-in forwards;
+}
+.fx-flecha .flecha::after {
+  content: ""; position: absolute; right: -12px; top: -6px;
+  border-left: 14px solid #dfe6ee; border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+}
+.fx-flecha .flecha::before {
+  content: ""; position: absolute; left: -2px; top: -5px; width: 16px; height: 15px;
+  background: linear-gradient(135deg, #ff6b6b 50%, transparent 50%);
+}
+.fx-flecha .flecha.segunda { animation-delay: .15s; }
+@keyframes flecha {
+  0% { transform: translate(-260px, 70px) rotate(-16deg); opacity: 1; }
+  100% { transform: translate(-115px, 0) rotate(-16deg); opacity: 1; }
+}
+.fx-flecha .impacto {
+  position: absolute; left: 0; top: 0; width: 70px; height: 70px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 20%, rgba(255, 224, 138, .9) 30%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0); animation: impacto .45s ease-out .28s forwards;
+}
+.fx-flecha.critico .impacto { animation-delay: .43s; }
+@keyframes impacto { 0% { transform: translate(-50%, -50%) scale(0); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; } }
+
+/* Escudo bloqueando */
+.fx-escudo { font-size: 64px; transform: translate(-50%, -50%); animation: escudo .6s ease-out forwards; filter: drop-shadow(0 0 16px #7fd1ff); }
+@keyframes escudo { 0% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } 40% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+/* Garras do monstro (erro) */
+.fx-garras { position: fixed; inset: 0; pointer-events: none; z-index: 20; }
+.fx-garras span {
+  position: absolute; top: 18%; width: 10px; height: 46vh; border-radius: 10px;
+  background: linear-gradient(transparent, rgba(255, 80, 80, .9) 20%, rgba(255, 80, 80, .9) 80%, transparent);
+  box-shadow: 0 0 14px rgba(255, 60, 60, .8);
+  transform: rotate(24deg) scaleY(0); transform-origin: top; animation: garra .55s ease-out forwards;
+}
+.fx-garras span:nth-child(1) { left: 36%; }
+.fx-garras span:nth-child(2) { left: 46%; animation-delay: .05s; }
+.fx-garras span:nth-child(3) { left: 56%; animation-delay: .1s; }
+@keyframes garra { 0% { transform: rotate(24deg) scaleY(0); opacity: 1; } 50% { transform: rotate(24deg) scaleY(1); opacity: 1; } 100% { transform: rotate(24deg) scaleY(1); opacity: 0; } }
+
+/* ---------- Tela inicial ---------- */
+.inicio { padding-top: 28px; }
+.inicio-grade {
+  max-width: 1080px; margin: 0 auto; display: grid; gap: 22px 32px;
+  grid-template-columns: 1.15fr 1fr;
+  grid-template-areas: "hero acesso" "passos acesso";
+  align-items: start;
+}
+.inicio-hero { grid-area: hero; display: flex; flex-direction: column; gap: 14px; }
+.inicio-acesso { grid-area: acesso; display: flex; flex-direction: column; gap: 16px; }
+.inicio-passos { grid-area: passos; display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 860px) {
+  .inicio-grade { grid-template-columns: 1fr; grid-template-areas: "hero" "acesso" "passos"; }
+}
+.titulo-inicio { font-family: Cinzel, Georgia, serif; font-weight: 900; color: var(--ouro); margin: 0; font-size: 54px; line-height: 1.05; text-shadow: 0 3px 0 #000, 0 0 24px rgba(233, 185, 73, .35); }
+@media (max-width: 520px) { .titulo-inicio { font-size: 40px; } }
+.subtitulo-inicio { font-size: 19px; line-height: 1.45; }
+.desfile { display: flex; gap: 10px; font-size: 40px; flex-wrap: wrap; }
+.desfile span { animation: flutuar 2.4s ease-in-out infinite; filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .5)); }
+.selos-inicio { display: flex; flex-wrap: wrap; gap: 8px; }
+.selos-inicio span { font-size: 14px; font-weight: 800; color: #e9e0ff; background: rgba(255, 255, 255, .08); border: 1px solid #5a4f80; border-radius: 99px; padding: 5px 12px; }
+.inicio .pergaminho h2 { margin-bottom: 2px; }
+.inicio .pergaminho label { color: var(--tinta); }
+.inicio .pergaminho input { border-color: #d9c08a; }
+.inicio .pergaminho .btn { background: #7a5416; box-shadow: 0 4px 0 #4f360c; }
+.inicio .pergaminho .btn.outline { background: transparent; color: #7a5416; border-color: #7a5416; box-shadow: none; }
+.inicio .pergaminho .erro { color: var(--vermelho); }
+.passos { display: grid; gap: 10px; }
+.passo { display: flex; gap: 14px; align-items: flex-start; background: rgba(255, 255, 255, .06); border: 1px solid #4b4170; border-radius: 14px; padding: 12px 14px; }
+.passo-icone { font-size: 30px; line-height: 1; }
+.passo strong { color: var(--ouro); font-size: 17px; }
+.passo p { margin: 4px 0 0; color: #ddd4f5; }
+.rodape-inicio { color: #b9aedb; font-size: 14px; margin: 6px 0 0; }
