@@ -2,11 +2,13 @@
 // Mostra o código para os aprendizes entrarem, o chefão com a vida da turma e os golpes.
 // A cada 2 segundos pergunta ao servidor o estado da batalha (estado_turma_mestre).
 // Só os acertos aparecem: ninguém é exposto por errar.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
 import { Link, useParams } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 import { ondasDe } from "../masmorra/dados.js";
 import { BarraVida } from "../masmorra/Questao.jsx";
+import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
 // Vida do chefão: 5 golpes por aprendiz (mínimo 10), para a batalha durar alguns minutos.
@@ -17,6 +19,8 @@ export default function Lousa() {
   const [sala, setSala] = useState(null);
   const [estado, setEstado] = useState(null);
   const [erro, setErro] = useState("");
+  const [qr, setQr] = useState("");
+  const danoAnterior = useRef(null);
 
   useEffect(() => {
     sb.from("sessao").select("codigo, disciplina, serie, ativa, modo").eq("id", id).maybeSingle()
@@ -39,7 +43,38 @@ export default function Lousa() {
     };
   }, [id]);
 
+  // QR Code com o link da sala: a turma entra apontando a câmera do celular.
+  useEffect(() => {
+    if (!sala) return;
+    QRCode.toDataURL(location.origin + "/jogar?codigo=" + sala.codigo, { margin: 1, width: 420 })
+      .then(setQr)
+      .catch(() => setQr(""));
+  }, [sala?.codigo]);
+
+  // Som a cada golpe novo e fanfarra quando a turma vence.
+  useEffect(() => {
+    if (!estado?.iniciada) return;
+    const anterior = danoAnterior.current;
+    danoAnterior.current = estado.dano;
+    if (anterior === null || estado.dano <= anterior) return;
+    if (estado.dano >= estado.vida_max) som.vitoria();
+    else som.acerto();
+  }, [estado?.dano, estado?.iniciada]);
+
+  function telaCheia() {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else document.documentElement.requestFullscreen?.();
+  }
+
+  async function encerrar() {
+    if (!window.confirm("Encerrar a sala? Ninguém mais consegue entrar nem responder.")) return;
+    const { error } = await sb.from("sessao").update({ ativa: false }).eq("id", id);
+    if (error) return setErro("Não deu para encerrar a sala.");
+    setSala({ ...sala, ativa: false });
+  }
+
   async function comecar() {
+    danoAnterior.current = null;
     const { error } = await sb.rpc("iniciar_turma", { p_sessao: id, p_vida: vidaPara(estado?.aprendizes || 0) });
     if (error) return setErro("Não deu para começar a batalha.");
     const { data } = await sb.rpc("estado_turma_mestre", { p_sessao: id });
@@ -60,14 +95,29 @@ export default function Lousa() {
       <div className="tela larga">
         <div className="topo-batalha">
           <Link className="link-claro" to="/mestre">‹ Painel</Link>
-          <span className="onda">{sala.serie} · {sala.disciplina}</span>
+          <span className="acoes-lousa">
+            <span className="onda">{sala.serie} · {sala.disciplina}{sala.ativa ? "" : " · encerrada"}</span>
+            <BotaoSom />
+            <button type="button" className="botao-icone" onClick={telaCheia} title="Tela cheia" aria-label="Tela cheia">⛶</button>
+            {sala.ativa && <button type="button" className="botao-icone" onClick={encerrar} title="Encerrar sala">Encerrar</button>}
+          </span>
         </div>
 
         {!estado.iniciada && (
           <div className="lousa centro">
-            <p className="rotulo">Entre pelo celular</p>
-            <p className="codigo-lousa">{sala.codigo}</p>
-            <p className="texto-claro">{link.replace(/^https?:\/\//, "")}</p>
+            <div className="entrada-lousa">
+              <div>
+                <p className="rotulo">Entre pelo celular</p>
+                <p className="codigo-lousa">{sala.codigo}</p>
+                <p className="texto-claro">{link.replace(/^https?:\/\//, "")}</p>
+              </div>
+              {qr && (
+                <div>
+                  <div className="qr-lousa"><img src={qr} alt={"QR Code para entrar na sala " + sala.codigo} /></div>
+                  <p className="mini claro">Aponte a câmera</p>
+                </div>
+              )}
+            </div>
             <div className="monstro chefao-grande">{chefao.icone}</div>
             <p className="nome-monstro">{chefao.nome}</p>
             <p className="titulo-masmorra">{estado.aprendizes} aprendiz(es) na sala</p>

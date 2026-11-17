@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { CLASSES, POCOES, medalha, ondasDe } from "./dados.js";
 import { regras, estadoInicial, resumoPorAssunto } from "./regras.js";
 import Questao, { BarraVida } from "./Questao.jsx";
+import { som, BotaoSom } from "./sons.jsx";
 import "./masmorra.css";
 
 function Coracoes({ vida, max, escudo }) {
@@ -24,7 +25,10 @@ function EscolhaClasse({ ondas, titulo, marca, prototipo, onEscolher }) {
   const chefao = ondas[ondas.length - 1];
   return (
     <div className="tela">
-      <p className="marca-masmorra">{marca}</p>
+      <div className="topo-batalha">
+        <p className="marca-masmorra">{marca}</p>
+        <BotaoSom />
+      </div>
       <h1 className="titulo-masmorra">{titulo}</h1>
       <div className="pergaminho">
         <h2>Como jogar</h2>
@@ -66,6 +70,7 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
         <span className="onda">{onda.chefao ? "Chefão!" : `Onda ${jogo.onda + 1} de ${ondas.length}`}</span>
         <span className="heroi-info">
           {jogo.classe.icone} {heroi.espada && "🗡️"} <Coracoes vida={heroi.vida} max={heroi.vidaMax} escudo={heroi.escudo} />
+          <BotaoSom />
         </span>
       </div>
 
@@ -254,6 +259,17 @@ export default function Masmorra({ fonte, disciplina = "Língua Portuguesa", pro
     }
   }, [jogo.fase, jogo.resposta]);
 
+  // Sons: um para cada golpe e um para cada tela (baú, vitória, derrota).
+  useEffect(() => {
+    const tocar = { acerto: som.acerto, critico: som.critico, erro: som.erro, bloqueio: som.bloqueio }[jogo.efeito?.tipo];
+    if (tocar) tocar();
+  }, [jogo.efeito?.id]);
+  useEffect(() => {
+    if (jogo.fase === "bau") som.bau();
+    if (jogo.fase === "vitoria") som.vitoria();
+    if (jogo.fase === "derrota") som.derrota();
+  }, [jogo.fase]);
+
   // Volta ao topo a cada tela nova.
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -275,6 +291,7 @@ export default function Masmorra({ fonte, disciplina = "Língua Portuguesa", pro
   }
 
   async function usarPocao(id) {
+    som.pocao();
     if (id !== "visao") return despachar({ tipo: "USAR_POCAO", pocao: id });
     setEnviando(true);
     try {

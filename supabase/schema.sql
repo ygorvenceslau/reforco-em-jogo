@@ -340,6 +340,20 @@ join questao q on q.id = r.questao_id
 join habilidade h on h.id = q.habilidade_id
 group by p.sessao_id, h.nome;
 
+-- Acertos por questão: mostra ao Mestre quais questões mais confundiram a turma,
+-- com a resposta certa e a explicação, para retomar na aula.
+create or replace view v_acertos_por_questao with (security_invoker = true) as
+select p.sessao_id, q.id as questao_id, q.enunciado, h.nome as assunto, q.explicacao,
+       case q.correta when 'A' then q.alt_a when 'B' then q.alt_b when 'C' then q.alt_c else q.alt_d end as resposta_certa,
+       count(r.id) as respondidas,
+       count(*) filter (where r.correta) as acertos,
+       round(100.0 * count(*) filter (where r.correta) / nullif(count(r.id), 0)) as percentual
+from resposta r
+join participante p on p.id = r.participante_id
+join questao q on q.id = r.questao_id
+join habilidade h on h.id = q.habilidade_id
+group by p.sessao_id, q.id, q.enunciado, h.nome, q.explicacao, q.correta, q.alt_a, q.alt_b, q.alt_c, q.alt_d;
+
 -- Permissões de acesso pela API (o RLS acima continua decidindo quais linhas cada um vê).
 -- Explícitas para funcionar mesmo em projetos que não liberam tabelas novas automaticamente.
 grant usage on schema public to anon, authenticated;
@@ -348,7 +362,7 @@ grant select on professor, questao, participante, resposta to authenticated;
 grant select, insert, update, delete on sessao to authenticated;
 grant insert, update, delete on questao to authenticated;
 grant usage on sequence questao_id_seq to authenticated;
-grant select on v_acertos_por_aluno, v_acertos_por_assunto to authenticated;
+grant select on v_acertos_por_aluno, v_acertos_por_assunto, v_acertos_por_questao to authenticated;
 
 -- Cadastro de Mestre pela tela: quando uma conta nova é criada no Supabase Auth,
 -- este gatilho cria a linha na tabela professor com o nome e a escola do formulário.

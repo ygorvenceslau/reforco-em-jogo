@@ -9,6 +9,7 @@ import { fonteSala } from "../masmorra/fontes.js";
 import { ondasDe } from "../masmorra/dados.js";
 import { novoBaralho } from "../masmorra/regras.js";
 import Questao, { BarraVida } from "../masmorra/Questao.jsx";
+import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
 export default function JogarTurma() {
@@ -64,6 +65,12 @@ export default function JogarTurma() {
     }
   }, [resposta]);
 
+  // Fanfarra quando a turma vence.
+  const venceuAgora = estado?.iniciada && estado.vida_max > 0 && estado.dano >= estado.vida_max;
+  useEffect(() => {
+    if (venceuAgora) som.vitoria();
+  }, [venceuAgora]);
+
   if (!aprendiz) return <Navigate to="/jogar" replace />;
   if (aprendiz.modo !== "turma") return <Navigate to="/jogar/masmorra" replace />;
 
@@ -80,6 +87,8 @@ export default function JogarTurma() {
     try {
       const r = await fonte.responder(q, q.opcoes[i].letra);
       setResposta({ opcao: i, acertou: r.acertou, certa: r.certa, explicacao: r.explicacao });
+      if (r.acertou) som.acerto();
+      else som.erro();
       setMeus((m) => ({ acertos: m.acertos + (r.acertou ? 1 : 0), total: m.total + 1 }));
       // Atualiza a barra na hora, sem esperar a próxima consulta.
       if (r.acertou) setEstado((e) => (e ? { ...e, dano: e.dano + 1 } : e));
@@ -145,7 +154,10 @@ export default function JogarTurma() {
   return (
     <div className="masmorra">
       <div className="tela">
-        <p className="marca-masmorra">Quizzes &amp; Masmorras · modo turma</p>
+        <div className="topo-batalha">
+          <p className="marca-masmorra">Quizzes &amp; Masmorras · modo turma</p>
+          <BotaoSom />
+        </div>
         {conteudo}
       </div>
     </div>
