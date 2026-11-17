@@ -226,6 +226,23 @@ begin
   return v_ok;
 end $$;
 
+-- Golpes do modo turma. Ficam separados das respostas porque:
+-- - a tabela resposta guarda só a PRIMEIRA resposta de cada questão (é o que vale no relatório);
+-- - na batalha, todo acerto conta, mesmo numa questão repetida ou numa nova batalha.
+create table if not exists golpe (
+  id bigserial primary key,
+  sessao_id uuid not null references sessao(id) on delete cascade,
+  participante_id uuid not null references participante(id) on delete cascade,
+  criado_em timestamptz not null default now()
+);
+create index if not exists golpe_sessao_idx on golpe (sessao_id, criado_em);
+alter table golpe enable row level security;
+drop policy if exists "professor ve golpes das suas sessoes" on golpe;
+create policy "professor ve golpes das suas sessoes" on golpe
+  for select to authenticated
+  using (exists (select 1 from sessao s where s.id = sessao_id and s.professor_id = auth.uid()));
+grant select on golpe to authenticated;
+
 -- Responder (versão da masmorra): corrige no servidor, grava e devolve se acertou,
 -- qual era a letra certa e a explicação. Só depois de responder o aprendiz vê a certa.
 create or replace function responder_questao(p_participante uuid, p_questao int, p_escolhida text)
@@ -235,6 +252,12 @@ declare
   v_ok boolean;
 begin
   v_ok := responder(p_participante, p_questao, p_escolhida);
+  -- No modo turma, com a batalha em andamento, cada acerto vira um golpe no chefão.
+  if v_ok then
+    insert into golpe (sessao_id, participante_id)
+    select s.id, p_participante from participante p join sessao s on s.id = p.sessao_id
+    where p.id = p_participante and s.modo = 'turma' and s.turma_iniciada_em is not null;
+  end if;
   select * into v_q from questao where id = p_questao;
   return json_build_object('correta', v_ok, 'certa', v_q.correta, 'explicacao', v_q.explicacao);
 end $$;
@@ -256,17 +279,14 @@ begin
 end $$;
 
 -- Modo turma, visto pelo celular do aprendiz: vida do chefão e se a batalha começou.
--- O dano é o total de acertos da turma desde que o Mestre começou a batalha.
+-- O dano é o total de golpes (acertos) da turma desde que o Mestre começou a batalha.
 create or replace function estado_turma(p_participante uuid)
 returns json language sql security definer set search_path = public as $$
   select json_build_object(
     'iniciada', s.turma_iniciada_em is not null,
     'vida_max', coalesce(s.chefao_vida, 0),
     'ativa', s.ativa,
-    'dano', (
-      select count(*) from resposta r join participante p2 on p2.id = r.participante_id
-      where p2.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
-    )
+    'dano', (select count(*) from golpe g where g.sessao_id = s.id and g.criado_em >= s.turma_iniciada_em)
   )
   from participante p join sessao s on s.id = p.sessao_id
   where p.id = p_participante;
@@ -280,16 +300,13 @@ returns json language sql security invoker set search_path = public as $$
     'iniciada', s.turma_iniciada_em is not null,
     'vida_max', coalesce(s.chefao_vida, 0),
     'aprendizes', (select count(*) from participante where sessao_id = s.id),
-    'dano', (
-      select count(*) from resposta r join participante p on p.id = r.participante_id
-      where p.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
-    ),
+    'dano', (select count(*) from golpe g where g.sessao_id = s.id and g.criado_em >= s.turma_iniciada_em),
     'golpes', coalesce((
-      select json_agg(g) from (
-        select r.id, p.nome from resposta r join participante p on p.id = r.participante_id
-        where p.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
-        order by r.respondida_em desc limit 8
-      ) g
+      select json_agg(x) from (
+        select g.id, p.nome from golpe g join participante p on p.id = g.participante_id
+        where g.sessao_id = s.id and g.criado_em >= s.turma_iniciada_em
+        order by g.criado_em desc limit 8
+      ) x
     ), '[]'::json)
   )
   from sessao s where s.id = p_sessao;
