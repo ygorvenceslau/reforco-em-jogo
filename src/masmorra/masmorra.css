@@ -172,3 +172,13 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .botao-ouro:disabled { opacity: .5; cursor: not-allowed; }
 .codigo-lousa { margin: 0; font-size: 84px; font-weight: 900; letter-spacing: 10px; color: var(--ouro); text-shadow: 0 4px 0 #000; }
 @media (max-width: 520px) { .codigo-lousa { font-size: 52px; letter-spacing: 6px; } }
+.topo-questao { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.botao-ouvir { font: inherit; font-size: 14px; font-weight: 800; color: #6b4a12; background: #ecd9a8; border: 2px solid #d9c08a; border-radius: 99px; padding: 4px 12px; cursor: pointer; }
+.botao-ouvir:hover { border-color: var(--ouro-escuro); }
+.botao-icone { font: inherit; font-weight: 800; font-size: 18px; background: rgba(255, 255, 255, .08); border: 2px solid #5a4f80; color: #fff; border-radius: 12px; padding: 4px 10px; cursor: pointer; }
+.botao-icone:hover { border-color: var(--ouro); }
+.qr-lousa { background: #fff; padding: 10px; border-radius: 14px; width: 210px; height: 210px; margin: 0 auto; }
+.qr-lousa img { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.entrada-lousa { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; text-align: center; }
+@media (max-width: 760px) { .entrada-lousa { grid-template-columns: 1fr; } }
+.acoes-lousa { display: flex; gap: 8px; align-items: center; }

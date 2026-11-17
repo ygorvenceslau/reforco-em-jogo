@@ -21,6 +21,7 @@ export default function Relatorio() {
   const [info, setInfo] = useState(null);
   const [assuntos, setAssuntos] = useState(null);
   const [aprendizes, setAprendizes] = useState(null);
+  const [questoes, setQuestoes] = useState(null);
   const [erro, setErro] = useState("");
 
   async function carregar() {
@@ -33,15 +34,20 @@ export default function Relatorio() {
     if (sala.error || !sala.data) return setErro("Sala não encontrada.");
     setInfo(sala.data);
 
-    // As duas consultas rodam ao mesmo tempo.
-    const [a, b] = await Promise.all([
+    // As três consultas rodam ao mesmo tempo.
+    const [a, b, c] = await Promise.all([
       sb.from("v_acertos_por_assunto").select("*").eq("sessao_id", id).order("percentual"),
       sb.from("v_acertos_por_aluno").select("*").eq("sessao_id", id)
         .order("percentual", { ascending: true, nullsFirst: false }).order("nome"),
+      // As 5 questões com menos acertos: o que vale a pena retomar na aula.
+      sb.from("v_acertos_por_questao").select("*").eq("sessao_id", id)
+        .lt("percentual", 100).order("percentual").order("respondidas", { ascending: false }).limit(5),
     ]);
     if (a.error || b.error) return setErro("Não foi possível carregar o relatório.");
     setAssuntos(a.data);
     setAprendizes(b.data);
+    // Se o banco ainda não tiver a view nova (schema.sql antigo), o resto do relatório funciona igual.
+    setQuestoes(c.error ? [] : c.data);
   }
 
   useEffect(() => { carregar(); }, [id]);
@@ -98,6 +104,25 @@ export default function Relatorio() {
             </table>
           </>
         )}
+      </div>
+
+      <div className="card">
+        <h2>Questões que mais confundiram</h2>
+        <p className="muted">Bom ponto de partida para retomar na próxima aula.</p>
+        {questoes && questoes.length === 0 && <p className="muted">Nenhuma questão com erros ainda.</p>}
+        {questoes && questoes.map((q) => (
+          <div className="questao-item" key={q.questao_id}>
+            <div className="linha">
+              <span className="selo fechada">{q.assunto}</span>
+              <Situacao percentual={q.percentual} />
+            </div>
+            <p className="questao-enunciado">{q.enunciado}</p>
+            <p className="muted dica">
+              {q.acertos} de {q.respondidas} acertaram ({q.percentual}%) · Resposta certa: <b>{q.resposta_certa}</b>
+            </p>
+            {q.explicacao && <p className="muted dica"><b>Explicação:</b> {q.explicacao}</p>}
+          </div>
+        ))}
       </div>
 
       <button className="btn outline" type="button" onClick={carregar}>Atualizar</button>
