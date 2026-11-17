@@ -73,9 +73,29 @@ create table if not exists resposta (
   unique (participante_id, questao_id)
 );
 
+-- Colunas novas (Quizzes & Masmorras). "add column if not exists" funciona em banco novo e antigo.
+-- questao.professor_id vazio = questão padrão (todo Mestre vê); preenchido = questão daquele Mestre.
+alter table questao add column if not exists professor_id uuid references professor(id) on delete cascade;
+alter table questao add column if not exists explicacao text;
+alter table questao add column if not exists criada_em timestamptz not null default now();
+-- sessao.fonte: de onde vêm as questões. sessao.modo: masmorra solo ou turma contra o chefão.
+alter table sessao add column if not exists fonte text not null default 'todas';
+alter table sessao add column if not exists modo text not null default 'solo';
+alter table sessao add column if not exists chefao_vida int;
+alter table sessao add column if not exists turma_iniciada_em timestamptz;
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'sessao_fonte_valida') then
+    alter table sessao add constraint sessao_fonte_valida check (fonte in ('padrao', 'minhas', 'todas'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'sessao_modo_valido') then
+    alter table sessao add constraint sessao_modo_valido check (modo in ('solo', 'turma'));
+  end if;
+end $$;
+
 -- Índices para deixar os relatórios rápidos (buscas por sessão e por participante).
 create index if not exists participante_sessao_idx on participante (sessao_id);
 create index if not exists resposta_participante_idx on resposta (participante_id);
+create index if not exists questao_professor_idx on questao (professor_id);
 
 -- Segurança (RLS = Row Level Security, segurança por linha)
 -- Com o RLS ligado, o PostgreSQL só devolve as linhas permitidas pelas "policies".
@@ -96,9 +116,20 @@ drop policy if exists "habilidades sao publicas" on habilidade;
 create policy "habilidades sao publicas" on habilidade
   for select to anon, authenticated using (true);
 
+-- Questões: todo Mestre vê as padrão (professor_id vazio) e as próprias.
+-- Só pode criar, editar e apagar as próprias.
 drop policy if exists "professor ve questoes" on questao;
 create policy "professor ve questoes" on questao
-  for select to authenticated using (true);
+  for select to authenticated using (professor_id is null or professor_id = auth.uid());
+drop policy if exists "professor cria suas questoes" on questao;
+create policy "professor cria suas questoes" on questao
+  for insert to authenticated with check (professor_id = auth.uid());
+drop policy if exists "professor edita suas questoes" on questao;
+create policy "professor edita suas questoes" on questao
+  for update to authenticated using (professor_id = auth.uid()) with check (professor_id = auth.uid());
+drop policy if exists "professor apaga suas questoes" on questao;
+create policy "professor apaga suas questoes" on questao
+  for delete to authenticated using (professor_id = auth.uid());
 
 drop policy if exists "professor gerencia suas sessoes" on sessao;
 -- Regra principal: a professora só vê, cria, altera e apaga sessões em que ela é a dona.
@@ -143,10 +174,12 @@ begin
   end if;
   insert into participante (sessao_id, nome)
   values (v_sessao.id, trim(p_nome)) returning id into v_id;
-  return json_build_object('participante_id', v_id, 'sessao_id', v_sessao.id, 'nome', trim(p_nome));
+  return json_build_object('participante_id', v_id, 'sessao_id', v_sessao.id, 'nome', trim(p_nome),
+    'modo', v_sessao.modo, 'disciplina', v_sessao.disciplina, 'serie', v_sessao.serie);
 end $$;
 
--- Sorteia até 8 questões da disciplina/série da sessão (e da habilidade, se escolhida).
+-- Sorteia questões da disciplina/série da sessão (e da habilidade, se escolhida),
+-- respeitando a fonte: questões padrão, só as do Mestre da sala, ou todas.
 -- Devolve as questões sem a coluna "correta": a resposta certa nunca sai do banco.
 create or replace function buscar_questoes(p_participante uuid, p_limite int default 8)
 returns table (id int, enunciado text, alt_a text, alt_b text, alt_c text, alt_d text, assunto text)
@@ -158,6 +191,10 @@ language sql security definer set search_path = public as $$
   join questao q on q.habilidade_id = h.id
   where p.id = p_participante
     and (s.habilidade_id is null or h.id = s.habilidade_id)
+    and (
+      (q.professor_id is null and s.fonte in ('padrao', 'todas'))
+      or (q.professor_id = s.professor_id and s.fonte in ('minhas', 'todas'))
+    )
   order by random()
   limit p_limite;
 $$;
@@ -189,7 +226,89 @@ begin
   return v_ok;
 end $$;
 
--- Libera as 3 funções para o aluno (anon) e para a professora (authenticated).
+-- Responder (versão da masmorra): corrige no servidor, grava e devolve se acertou,
+-- qual era a letra certa e a explicação. Só depois de responder o aprendiz vê a certa.
+create or replace function responder_questao(p_participante uuid, p_questao int, p_escolhida text)
+returns json language plpgsql security definer set search_path = public as $$
+declare
+  v_q questao%rowtype;
+  v_ok boolean;
+begin
+  v_ok := responder(p_participante, p_questao, p_escolhida);
+  select * into v_q from questao where id = p_questao;
+  return json_build_object('correta', v_ok, 'certa', v_q.correta, 'explicacao', v_q.explicacao);
+end $$;
+
+-- Poção de Visão: devolve 2 letras erradas sorteadas, sem revelar a certa.
+create or replace function eliminar_alternativas(p_participante uuid, p_questao int)
+returns text[] language plpgsql security definer set search_path = public as $$
+declare
+  v_correta char(1);
+begin
+  if not exists (select 1 from participante where id = p_participante) then
+    raise exception 'Participante inexistente';
+  end if;
+  select correta into v_correta from questao where id = p_questao;
+  return array(
+    select l from unnest(array['A','B','C','D']) as l
+    where l <> v_correta order by random() limit 2
+  );
+end $$;
+
+-- Modo turma, visto pelo celular do aprendiz: vida do chefão e se a batalha começou.
+-- O dano é o total de acertos da turma desde que o Mestre começou a batalha.
+create or replace function estado_turma(p_participante uuid)
+returns json language sql security definer set search_path = public as $$
+  select json_build_object(
+    'iniciada', s.turma_iniciada_em is not null,
+    'vida_max', coalesce(s.chefao_vida, 0),
+    'ativa', s.ativa,
+    'dano', (
+      select count(*) from resposta r join participante p2 on p2.id = r.participante_id
+      where p2.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
+    )
+  )
+  from participante p join sessao s on s.id = p.sessao_id
+  where p.id = p_participante;
+$$;
+
+-- Modo turma, visto pela lousa do Mestre: o mesmo estado + aprendizes e últimos golpes.
+-- "security invoker": roda com a permissão do Mestre, então o RLS continua valendo.
+create or replace function estado_turma_mestre(p_sessao uuid)
+returns json language sql security invoker set search_path = public as $$
+  select json_build_object(
+    'iniciada', s.turma_iniciada_em is not null,
+    'vida_max', coalesce(s.chefao_vida, 0),
+    'aprendizes', (select count(*) from participante where sessao_id = s.id),
+    'dano', (
+      select count(*) from resposta r join participante p on p.id = r.participante_id
+      where p.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
+    ),
+    'golpes', coalesce((
+      select json_agg(g) from (
+        select r.id, p.nome from resposta r join participante p on p.id = r.participante_id
+        where p.sessao_id = s.id and r.correta and r.respondida_em >= s.turma_iniciada_em
+        order by r.respondida_em desc limit 8
+      ) g
+    ), '[]'::json)
+  )
+  from sessao s where s.id = p_sessao;
+$$;
+
+-- Mestre começa (ou recomeça) a batalha da turma. Usa o relógio do servidor (now()),
+-- o mesmo das respostas, para que nenhum golpe se perca. O RLS garante que só o dono da sala consegue.
+create or replace function iniciar_turma(p_sessao uuid, p_vida int)
+returns void language sql security invoker set search_path = public as $$
+  update sessao set chefao_vida = greatest(p_vida, 1), turma_iniciada_em = now()
+  where id = p_sessao;
+$$;
+
+-- Libera as funções para o aprendiz (anon) e para o Mestre (authenticated).
+grant execute on function responder_questao(uuid, int, text) to anon, authenticated;
+grant execute on function eliminar_alternativas(uuid, int) to anon, authenticated;
+grant execute on function estado_turma(uuid) to anon, authenticated;
+grant execute on function estado_turma_mestre(uuid) to authenticated;
+grant execute on function iniciar_turma(uuid, int) to authenticated;
 grant execute on function entrar_na_sessao(text, text) to anon, authenticated;
 grant execute on function buscar_questoes(uuid, int) to anon, authenticated;
 grant execute on function responder(uuid, int, text) to anon, authenticated;
@@ -227,6 +346,8 @@ grant usage on schema public to anon, authenticated;
 grant select on habilidade to anon, authenticated;
 grant select on professor, questao, participante, resposta to authenticated;
 grant select, insert, update, delete on sessao to authenticated;
+grant insert, update, delete on questao to authenticated;
+grant usage on sequence questao_id_seq to authenticated;
 grant select on v_acertos_por_aluno, v_acertos_por_assunto to authenticated;
 
 -- Cadastro de Mestre pela tela: quando uma conta nova é criada no Supabase Auth,

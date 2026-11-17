@@ -39,6 +39,25 @@ export const ONDAS = [
   { nome: "Dragão da Gramática", icone: "🐉", vida: 6, fala: "Só passa quem sabe a língua!", chefao: true },
 ];
 
+// Monstros de cada disciplina. A vida de cada onda é sempre a mesma de ONDAS (as regras usam ONDAS).
+const MONSTROS = {
+  "Língua Portuguesa": ONDAS,
+  "Matemática": [
+    { nome: "Monstrinho Conta-Errada", icone: "👾", vida: 3, fala: "Hehe! 2 + 2 = 5!" },
+    { nome: "Polvo das Contas", icone: "🐙", vida: 4, fala: "Oito braços, oito contas difíceis!" },
+    { nome: "Dragão dos Números", icone: "🐉", vida: 6, fala: "Só passa quem domina os números!", chefao: true },
+  ],
+};
+const MONSTROS_GERAIS = [
+  { nome: "Monstrinho Esquecido", icone: "👾", vida: 3, fala: "Hehe! Você não vai lembrar!" },
+  { nome: "Morcego da Dúvida", icone: "🦇", vida: 4, fala: "Shhh... será que é essa mesmo?" },
+  { nome: "Dragão do Saber", icone: "🐉", vida: 6, fala: "Só passa quem estudou!", chefao: true },
+];
+
+export function ondasDe(disciplina) {
+  return MONSTROS[disciplina] || MONSTROS_GERAIS;
+}
+
 export const POCOES = {
   cura: { nome: "Poção de Cura", icone: "❤️", efeito: "Recupera 2 corações." },
   visao: { nome: "Poção de Visão", icone: "🔮", efeito: "Elimina 2 alternativas erradas." },

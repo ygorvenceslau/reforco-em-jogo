@@ -11,7 +11,9 @@ Tempo: uns 15 minutos. Faça na ordem. Todos os arquivos `.sql` **podem ser roda
 1. Menu da esquerda > **SQL Editor** > **New query**.
 2. Abra `supabase/schema.sql` no GitHub, copie **tudo**, cole e clique em **Run**. Deve aparecer "Success".
 3. Nova query: cole `supabase/seed.sql` inteiro e clique em **Run**.
-4. Confira em **Table Editor**: a tabela `questao` deve ter 12 linhas.
+4. Confira em **Table Editor**: a tabela `questao` deve ter 187 linhas (as questões padrão).
+
+**Atualizações:** sempre que o `schema.sql` ou o `seed.sql` mudarem no GitHub, rode os dois de novo, nessa ordem. Eles não apagam nada e não duplicam questões.
 
 ## 3. Contas de Mestre
 As contas são criadas pela própria tela de cadastro do site (`/mestre/cadastro`). O `schema.sql` tem um gatilho que registra cada conta nova na tabela `professor` automaticamente.

@@ -1,116 +1,111 @@
-> **Atenção:** este guia descreve a versão anterior do site (HTML puro, pasta `src/js`). Ele será atualizado para a versão em React ao fim do desenvolvimento da masmorra.
+# Explicação do código
 
-# Explicação do código (para a apresentação)
-
-Guia para explicar e defender o projeto na apresentação. Leia junto com o código aberto no VS Code: os arquivos de `src/js/` e o `supabase/schema.sql` têm comentários explicando cada parte.
+Guia para explicar e defender o Quizzes & Masmorras. Leia com o código aberto no VS Code.
 
 ## 1. A ideia em uma frase
-Um site onde a **professora cria uma sessão de quiz**, os **alunos entram pelo celular com um código** e a professora vê **quem precisa de reforço em quê**.
+O reforço escolar vira uma aventura: o aprendiz derrota monstros respondendo questões, sozinho ou com a turma, e o Mestre (docente) descobre quem precisa de reforço e em qual assunto.
 
-## 2. Como as peças se conectam
+## 2. Como as peças se ligam
 ```
- Celular / computador                 Netlify                        Supabase
- ┌────────────────────┐   baixa    ┌──────────────┐   pede dados   ┌──────────────────────┐
- │ Navegador           │ ◄──────── │ pasta src/   │                │ PostgreSQL (banco)    │
- │ HTML + CSS + JS     │ ─────────────────────────────────────────► │ Auth (login)          │
- └────────────────────┘            └──────────────┘                │ RLS (regras de acesso)│
-                                                                    └──────────────────────┘
+ Celular / notebook                     Netlify                          Supabase
+ ┌────────────────────┐   baixa o site  ┌──────────────┐               ┌────────────────────────┐
+ │ Navegador (React)   │ ◄────────────── │ pasta dist/  │               │ PostgreSQL (banco)      │
+ │                     │ ────────────────────────────────────────────► │ Auth (login do Mestre)  │
+ └────────────────────┘    consultas e funções do banco                 │ RLS (regras de acesso)  │
+                                                                        └────────────────────────┘
 ```
-- **Netlify** só entrega os arquivos da pasta `src/` (as telas). Não guarda dados.
-- **Supabase** é o back-end: banco PostgreSQL, login da professora e as regras de segurança.
-- O arquivo **`src/js/config.js`** liga as duas partes (endereço do projeto + chave pública).
-- Não existe um servidor nosso: o JavaScript do navegador conversa direto com o Supabase, e **quem protege os dados é o próprio banco** (RLS e funções).
+- **Netlify:** gera o site (`npm run build`) e entrega os arquivos prontos. As telas são estáticas.
+- **Supabase:** é o back-end. Tem o banco PostgreSQL, o login do Mestre e as regras de segurança.
+- **`src/config.js`:** liga as duas partes, com o endereço do projeto e a chave pública.
+- Não existe um servidor próprio, como Node ou PHP. A lógica do servidor está em **funções SQL dentro do banco** (`supabase/schema.sql`).
 
-## 3. As telas (pasta `src/`)
-| Tela | Arquivo HTML | Arquivo JS | O que faz |
-|---|---|---|---|
-| Início | `index.html` | — | Escolhe "Sou professora" ou "Sou aluno" |
-| Login | `login.html` | `js/login.js` | E-mail e senha da professora (`sb.auth.signInWithPassword`) |
-| Painel | `painel.html` | `js/painel.js` | Cria sessão, mostra código/link, lista e encerra sessões |
-| Entrar | `entrar.html` | `js/entrar.js` | Aluno digita código e apelido |
-| Quiz | `quiz.html` | `js/quiz.js` | 8 questões, mostra acerto/erro e resultado |
-| Relatório | `relatorio.html` | `js/relatorio.js` | Acertos por assunto e por aluno, marca "Reforçar" |
-| Diagnóstico | `diagnostico.html` | `js/diagnostico.js` | Confere se o site está ligado ao banco |
-| Privacidade / 404 | `privacidade.html`, `404.html` | — | Páginas informativas |
+## 3. Tecnologias
+- **React + Vite:** telas e componentes. Com o jogo (estado da batalha, animações, várias telas), um framework passou a valer a pena.
+- **React Router:** cada endereço mostra uma tela (`src/App.jsx`).
+- **supabase-js:** biblioteca que conversa com o Supabase.
+  - `sb.auth`: login.
+  - `sb.from("tabela")`: consultas.
+  - `sb.rpc("funcao")`: chama funções do banco.
+- **PostgreSQL + PL/pgSQL:** tabelas, regras de segurança e funções.
 
-Todas usam `css/style.css` (um só arquivo de estilo, pensado primeiro para celular) e `js/app.js` (código comum).
-
-## 4. Código comum: `src/js/app.js`
-- `const sb = supabase.createClient(URL, CHAVE)` → cria a conexão com o Supabase, usada por todas as telas.
-- `$("id")` → atalho para `document.getElementById`.
-- `exigirLogin()` → as telas da professora chamam no começo; sem login, volta para `login.html`.
-- `participanteAtual()` → o aluno não tem conta; os dados dele ficam só na aba do navegador (`sessionStorage`).
-
-## 5. Fluxo da professora
-**Criar sessão** (`painel.js`, função `criarSessao`):
-```js
-sb.from("sessao").insert({ professor_id, habilidade_id, disciplina, serie })
-  .select("id, codigo").single();
-```
-- O **código de 6 letras é gerado pelo banco** (função `gerar_codigo()` no `schema.sql`), não pelo navegador.
-- O link mostrado é `entrar.html?codigo=XXXXXX`; o aluno que abre o link já encontra o código preenchido.
-- **Encerrar/Reabrir** só muda a coluna `ativa` da sessão (`update({ ativa: false })`).
-
-**Relatório** (`relatorio.js`):
-```js
-sb.from("v_acertos_por_aluno").select("*").eq("sessao_id", id)
-sb.from("v_acertos_por_assunto").select("*").eq("sessao_id", id)
-```
-- As contas (acertos, percentual) são feitas **no banco**, por duas *views*.
-- O JavaScript só desenha a tabela e marca **"Reforçar" quando o percentual é menor que 60** (`LIMITE_REFORCO = 60`).
-- Os nomes dos alunos são escritos com `textContent`, nunca como HTML: um aluno que digitar código no nome não consegue "invadir" a página (proteção contra XSS).
-
-## 6. Fluxo do aluno
-O aluno **não acessa nenhuma tabela**. Ele só chama 3 funções do banco (`sb.rpc(...)`):
-
-| Função (no `schema.sql`) | Chamada em | O que faz |
-|---|---|---|
-| `entrar_na_sessao(codigo, nome)` | `entrar.js` | Confere se o código existe e se a sessão está aberta; cria o participante |
-| `buscar_questoes(participante)` | `quiz.js` | Sorteia até 8 questões **sem a alternativa correta** |
-| `responder(participante, questao, letra)` | `quiz.js` | **Corrige no servidor**, grava a resposta e devolve só certo/errado |
-
-Por que assim? Se a resposta certa fosse para o celular, um aluno esperto poderia vê-la pelo navegador (F12). Aqui ela nunca sai do banco.
-
-## 7. Banco de dados (`supabase/`)
-| Arquivo | Para que serve |
+## 4. Onde está cada coisa
+| Arquivo | O que faz |
 |---|---|
-| `schema.sql` | Cria tabelas, regras de segurança, funções e views. Pode rodar de novo sem erro. |
-| `seed.sql` | 3 habilidades e 12 questões de Português (5º ano). Não duplica se rodar de novo. |
-| `professora.sql` | Liga a conta de login à tabela `professor`. |
-| `demo.sql` | Cria 8 alunos fictícios para a demonstração. |
+| `src/App.jsx` | Rotas: qual tela aparece em cada endereço |
+| `src/lib/supabase.js` | Conexão com o banco, usada por todas as telas |
+| `src/components/RequireMestre.jsx` | Protege as telas do Mestre: sem login, vai para a tela de entrar |
+| `src/pages/MestreCadastro.jsx` | Cadastro de Mestre |
+| `src/pages/Painel.jsx` | Criar sala (ano, disciplina, assunto, fonte das questões e modo), listar, encerrar e excluir salas |
+| `src/pages/Questoes.jsx` | Banco de questões: padrão e minhas; criar, editar, duplicar |
+| `src/pages/AprendizEntrar.jsx` | Aprendiz entra com código e apelido |
+| `src/pages/JogarMasmorra.jsx` | Masmorra solo dentro da sala |
+| `src/pages/JogarTurma.jsx` | Celular do aprendiz no modo turma |
+| `src/pages/Lousa.jsx` | Lousa do Mestre no modo turma |
+| `src/pages/Relatorio.jsx` | Acertos por aprendiz e por assunto, com "Reforçar" |
+| `src/masmorra/regras.js` | **Regras do jogo** (ataque, crítico, dano, poções, baú, ondas) |
+| `src/masmorra/fontes.js` | De onde vêm as questões e quem corrige (protótipo ou servidor) |
+| `src/masmorra/Masmorra.jsx` | Telas da masmorra: classe, batalha, baú, derrota, vitória |
+| `src/masmorra/dados.js` | Classes, monstros, poções, recompensas e medalhas |
+| `supabase/schema.sql` | Tabelas, RLS, funções e views |
+| `supabase/seed.sql` | 187 questões padrão com explicação |
 
-**Tabelas:** `professor` → `sessao` → `participante` → `resposta`, e `habilidade` → `questao`. O diagrama está em `docs/banco-de-dados.md`.
+## 5. As regras do jogo (`src/masmorra/regras.js`)
+Tudo o que acontece na batalha passa por **uma função só**, `regras(jogo, acao)`. Ela recebe o estado atual e uma ação e devolve o estado novo. No React isso se chama *reducer* (`useReducer`).
 
-**Segurança (RLS – Row Level Security):** o PostgreSQL filtra as linhas automaticamente. Exemplo do `schema.sql`:
-```sql
-create policy "professor gerencia suas sessoes" on sessao
-  for all to authenticated
-  using (professor_id = auth.uid());
+| Ação | O que acontece |
+|---|---|
+| `ESCOLHER_CLASSE` | Cria o herói (vida e poções da classe) e sorteia o baralho de questões |
+| `RESPONDER` | Acertou: dano no monstro (crítico a cada N acertos seguidos, espada +1). Errou: perde 1 coração (o escudo bloqueia) |
+| `USAR_POCAO` | Cura (+2 corações), escudo (bloqueia o próximo erro) ou visão (elimina 2 erradas) |
+| `AVANCAR` | Monstro derrotado: baú ou vitória. Corações zerados: derrota. Senão, próxima questão |
+| `ESCOLHER_RECOMPENSA` | Aplica a recompensa do baú e começa a próxima onda |
+| `TENTAR_DE_NOVO` | Volta com a vida cheia e o monstro da onda também se recupera |
+
+**Por que assim?** As regras ficam num lugar só, fáceis de testar e explicar. Simulei 1.200 partidas só com essa função para equilibrar o jogo: de 10 a 22 questões por partida, conforme o desempenho.
+
+## 6. A "fonte" das questões (`src/masmorra/fontes.js`)
+A masmorra não sabe de onde vêm as questões nem quem corrige. Ela recebe uma **fonte** com três funções: `carregar`, `responder` e `eliminar`.
+- **`fonteLocal`:** o protótipo (`/masmorra`), com questões no próprio site, para demonstrar sem login.
+- **`fonteSala`:** a sala real, que chama as funções do banco:
+```js
+sb.rpc("buscar_questoes", { p_participante, p_limite: 40 })  // questões SEM a resposta certa
+sb.rpc("responder_questao", { p_participante, p_questao, p_escolhida })  // corrige no servidor
+sb.rpc("eliminar_alternativas", { p_participante, p_questao })  // poção de visão
 ```
-Tradução: "uma professora logada só vê e altera as sessões em que `professor_id` é ela mesma". Mesmo que alguém mude o JavaScript, o banco recusa.
+Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao celular depois que o aprendiz responde**.
 
-**Funções `security definer`:** as 3 funções do aluno rodam com permissão do dono do banco, mas só fazem exatamente o que está escrito nelas. É assim que o aluno sem conta consegue jogar sem enxergar as tabelas.
+## 7. Modo turma
+1. O Mestre cria a sala em modo turma e abre a **lousa** (`Lousa.jsx`), que mostra o código grande.
+2. Os aprendizes entram e ficam esperando (`JogarTurma.jsx`).
+3. O Mestre clica em **Começar a batalha**. A função `iniciar_turma` grava a vida do chefão (5 por aprendiz, no mínimo 10) e a hora de início, com o relógio do servidor.
+4. Cada acerto vira uma linha na tabela `resposta`. O **dano** do chefão é a contagem de acertos da sala desde o início da batalha.
+5. A lousa (`estado_turma_mestre`) e os celulares (`estado_turma`) consultam o servidor **a cada 2 segundos**.
+6. A lousa mostra **só os acertos**, para não expor quem erra.
 
-**Views com `security_invoker`:** o relatório respeita o RLS de quem consulta, então a professora só vê os próprios alunos.
+## 8. Banco de dados
+Tabelas: `professor` → `sessao` → `participante` → `resposta`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
 
-## 8. Perguntas prováveis e respostas curtas
-- **Por que não usaram MySQL?** O Supabase é PostgreSQL, também relacional e com SQL padrão, e já traz login, API e regras de segurança, então não precisamos criar e manter um servidor.
-- **A chave no `config.js` não é um risco?** Não. É a chave pública (publishable/anon), feita para ficar no site. A segurança vem do RLS. A chave secreta (`service_role`) nunca foi usada no código.
-- **O aluno pode responder duas vezes a mesma questão?** Não. A tabela `resposta` tem `unique (participante_id, questao_id)`, então só a primeira resposta vale.
-- **O aluno pode ver a resposta certa?** Não. `buscar_questoes` não devolve a coluna `correta`, e a correção acontece no servidor.
-- **Uma professora vê os alunos da outra?** Não. O RLS filtra as linhas: com duas contas de professora, cada uma vê só as próprias sessões (teste: criar uma segunda conta e abrir o painel).
-- **Que dados do aluno vocês guardam?** Só o apelido e as respostas. Sem e-mail, senha ou telefone (ver `privacidade.html`).
-- **Como o site é publicado?** Cada alteração aprovada na branch `main` do GitHub é publicada sozinha pelo Netlify.
-- **Usou IA?** Sim, como ferramenta de apoio (Claude Code), em tarefas pequenas, como previsto no `CONTEXT.md`. Li, testei e comentei cada parte, e consigo explicar o que cada arquivo faz.
+Colunas importantes:
+- `questao.professor_id`: vazio = questão padrão; preenchido = questão daquele Mestre.
+- `questao.explicacao`: aparece para o aprendiz quando ele erra.
+- `sessao.fonte` (`padrao`, `minhas`, `todas`) e `sessao.modo` (`solo`, `turma`).
 
-## 9. Ordem para apresentar (uma pessoa)
-1. **Problema e ideia** (seção 1) — sem código, 1 minuto.
-2. **Arquitetura** (seção 2) — mostre o desenho e o `config.js`.
-3. **Demonstração ao vivo** — siga `docs/roteiro-demonstracao.md`.
-4. **Código no VS Code**, nesta ordem:
-   1. `src/js/app.js` — a conexão com o Supabase e as funções comuns.
-   2. `src/js/painel.js` — `criarSessao()`: como a sessão e o código nascem.
-   3. `src/js/entrar.js` e `src/js/quiz.js` — o aluno só chama funções (`sb.rpc`).
-   4. `supabase/schema.sql` — a função `responder` (correção no servidor) e as regras de RLS.
-   5. `src/js/relatorio.js` — as views e a regra dos 60%.
-5. **Perguntas** — use a seção 8.
+**RLS (segurança por linha):** o PostgreSQL só devolve as linhas permitidas. Exemplo:
+```sql
+create policy "professor ve questoes" on questao
+  for select to authenticated using (professor_id is null or professor_id = auth.uid());
+```
+"O Mestre vê as questões padrão e as próprias." Para criar, editar e apagar, só as próprias.
+
+**Funções `security definer`:** as funções do aprendiz rodam com permissão do dono do banco, mas só fazem o que está escrito nelas. É assim que o aprendiz joga sem conta e sem enxergar nenhuma tabela.
+
+## 9. Perguntas prováveis
+- **Por que React?** Com o jogo, o site passou a ter estado complexo (vida, poções, ondas), animações e várias telas. O React organiza isso em componentes.
+- **Por que não Node.js?** O back-end é o Supabase. A lógica do servidor está em funções SQL no PostgreSQL, então não foi preciso manter um servidor.
+- **O Netlify serve?** Sim. Ele entrega só os arquivos do site, que são estáticos. A parte dinâmica fica no Supabase.
+- **O aprendiz pode colar?** A resposta certa só sai do servidor depois da resposta, e cada questão só vale uma vez no relatório (`unique` na tabela `resposta`).
+- **Uma pessoa vê os dados de outra?** Não. O RLS filtra pelo usuário logado, e o aprendiz não acessa tabelas.
+- **O aprendiz precisa de conta?** Não: código e apelido. Isso protege os dados das crianças (LGPD) e não toma tempo da aula.
+- **O modo turma é em tempo real?** Atualiza a cada 2 segundos, o que é suficiente para a sala. Dá para trocar por Supabase Realtime no futuro.
+- **Os equipamentos não tiram o foco do estudo?** Eles ajudam, mas não substituem o acerto: sem responder certo, ninguém vence. E todo erro mostra uma explicação.
+- **Usou IA?** Sim, o Claude Code, como ferramenta de apoio. Cada parte foi testada, e eu consigo explicar o que cada arquivo faz.

@@ -1,6 +1,8 @@
 // Regras da masmorra. Tudo o que acontece no jogo passa pela função "regras":
 // ela recebe o estado atual e uma ação (responder, usar poção...) e devolve o novo estado.
-import { CLASSES, ONDAS, QUESTOES, RECOMPENSAS } from "./dados.js";
+// As regras não sabem de onde vêm as questões nem quem corrige: isso fica com a "fonte"
+// (fontes.js), que pode ser o protótipo local ou o servidor da sala do Mestre.
+import { CLASSES, ONDAS, RECOMPENSAS } from "./dados.js";
 
 export function embaralhar(lista) {
   const copia = [...lista];
@@ -11,12 +13,10 @@ export function embaralhar(lista) {
   return copia;
 }
 
-// Baralho de questões: ordem sorteada e alternativas também sorteadas.
-export function novoBaralho() {
-  return embaralhar(QUESTOES).map((q) => ({
-    ...q,
-    opcoes: embaralhar(q.opcoes.map((texto, i) => ({ texto, certa: i === q.correta }))),
-  }));
+// Baralho: ordem das questões e das alternativas sorteadas.
+// Cada questão tem a forma { id, assunto, enunciado, opcoes: [{ letra, texto }] }.
+export function novoBaralho(questoes) {
+  return embaralhar(questoes).map((q) => ({ ...q, opcoes: embaralhar(q.opcoes) }));
 }
 
 export const estadoInicial = { fase: "escolha" };
@@ -25,7 +25,7 @@ function proximaQuestao(jogo) {
   const fim = jogo.indice + 1 >= jogo.baralho.length;
   return {
     ...jogo,
-    baralho: fim ? novoBaralho() : jogo.baralho,
+    baralho: fim ? novoBaralho(jogo.questoes) : jogo.baralho,
     indice: fim ? 0 : jogo.indice + 1,
     resposta: null,
     eliminadas: [],
@@ -48,7 +48,8 @@ export function regras(jogo, acao) {
         heroi: { vida: classe.vida, vidaMax: classe.vida, espada: false, escudo: false, pocoes: { ...classe.pocoes } },
         onda: 0,
         monstroVida: ONDAS[0].vida,
-        baralho: novoBaralho(),
+        questoes: acao.questoes,
+        baralho: novoBaralho(acao.questoes),
         indice: 0,
         resposta: null,
         eliminadas: [],
@@ -59,13 +60,15 @@ export function regras(jogo, acao) {
       };
     }
 
+    // O resultado (acertou, letra certa, explicação) vem de fora: da fonte de questões.
     case "RESPONDER": {
       if (jogo.resposta) return jogo; // só uma resposta por questão
       const questao = jogo.baralho[jogo.indice];
-      const acertou = questao.opcoes[acao.opcao].certa;
+      const { acertou, certa, explicacao } = acao.resultado;
       const historico = [...jogo.historico, { assunto: questao.assunto, acertou }];
       const respostasNaOnda = jogo.respostasNaOnda + 1;
       const id = (jogo.efeito?.id || 0) + 1;
+      const base = { opcao: acao.opcao, certa, explicacao };
 
       if (acertou) {
         // Acerto = ataque. A cada N acertos seguidos, golpe crítico (dano em dobro).
@@ -78,7 +81,7 @@ export function regras(jogo, acao) {
           respostasNaOnda,
           sequencia,
           monstroVida: Math.max(0, jogo.monstroVida - dano),
-          resposta: { opcao: acao.opcao, acertou: true, dano, critico },
+          resposta: { ...base, acertou: true, dano, critico },
           efeito: { tipo: critico ? "critico" : "acerto", valor: dano, id },
         };
       }
@@ -91,7 +94,7 @@ export function regras(jogo, acao) {
         respostasNaOnda,
         sequencia: 0,
         heroi: { ...jogo.heroi, escudo: false, vida: bloqueou ? jogo.heroi.vida : jogo.heroi.vida - 1 },
-        resposta: { opcao: acao.opcao, acertou: false, bloqueou },
+        resposta: { ...base, acertou: false, bloqueou },
         efeito: { tipo: bloqueou ? "bloqueio" : "erro", valor: 1, id },
       };
     }
@@ -106,6 +109,7 @@ export function regras(jogo, acao) {
       return proximaQuestao(jogo);
     }
 
+    // Poção de visão: as letras a eliminar também vêm da fonte (no servidor, sem revelar a certa).
     case "USAR_POCAO": {
       const { pocoes } = jogo.heroi;
       if (!pocoes[acao.pocao] || jogo.resposta) return jogo;
@@ -120,12 +124,8 @@ export function regras(jogo, acao) {
         heroi.escudo = true;
       }
       if (acao.pocao === "visao") {
-        if (jogo.eliminadas.length) return jogo;
-        // Elimina 2 alternativas erradas, sorteadas.
-        const erradas = jogo.baralho[jogo.indice].opcoes
-          .map((o, i) => (o.certa ? null : i))
-          .filter((i) => i !== null);
-        return { ...jogo, heroi, eliminadas: embaralhar(erradas).slice(0, 2) };
+        if (jogo.eliminadas.length || !acao.eliminar?.length) return jogo;
+        return { ...jogo, heroi, eliminadas: acao.eliminar };
       }
       return { ...jogo, heroi };
     }

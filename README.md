@@ -4,8 +4,6 @@ Site: https://reforcoemjogo.netlify.app
 
 Plataforma gamificada para reforço escolar no Ensino Fundamental. O Mestre (docente, monitor ou quem reúne amigos para estudar) cria uma sala, os Aprendizes entram pelo celular com um código e enfrentam monstros respondendo questões. No final, o Mestre vê quem precisa de reforço e em qual assunto.
 
-Em desenvolvimento: a masmorra (batalha com ondas, chefão, poções e equipamentos), solo e em grupo.
-
 Projeto integrado das disciplinas de Extensão (PIES I), CTS, UX, Front End e Banco de Dados.
 
 ## Problema
@@ -14,10 +12,15 @@ Com o ensino integral não existe mais contraturno, então o aluno que precisa d
 
 ## Como funciona
 
-1. O Mestre cria uma conta, escolhe ano, disciplina e assunto e cria uma sala. O site mostra um código de 6 caracteres e um link.
-2. O Aprendiz abre o site no celular, digita o código e um apelido (não precisa criar conta) e joga.
-3. Depois de cada resposta ele já vê se acertou, e no final aparece o resultado.
-4. No relatório o Mestre vê os acertos por aprendiz e por assunto. Quem fica abaixo de 60% aparece como "Reforçar". Salas antigas podem ser encerradas ou excluídas.
+1. O Mestre cria uma conta e uma sala: escolhe ano, disciplina, assunto, de onde vêm as questões (padrão, próprias ou as duas) e o modo de jogo.
+2. O Aprendiz entra pelo celular com o código e um apelido, sem criar conta.
+3. **Masmorra solo:** cada aprendiz escolhe uma classe e enfrenta 3 ondas de monstros e um chefão. Acertar é atacar; errar tira um coração e mostra a explicação. Há poções (cura, visão, escudo) e um baú com recompensas entre as ondas.
+4. **Turma contra o chefão:** o Mestre projeta a lousa e todos atacam o mesmo chefão pelo celular. A turma vence junta, e a lousa mostra só os acertos.
+5. No relatório o Mestre vê os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%.
+
+O site já vem com 187 questões padrão (Língua Portuguesa e Matemática, 1º ao 9º ano), todas com explicação. O Mestre pode criar as próprias questões ou duplicar e adaptar uma padrão.
+
+Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do modo turma).
 
 ## Tecnologias
 

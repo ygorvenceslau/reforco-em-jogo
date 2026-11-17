@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { COLEGAS } from "./dados.js";
 import { novoBaralho } from "./regras.js";
+import { questoesLocais } from "./fontes.js";
 import Questao from "./Questao.jsx";
 import "./masmorra.css";
 
@@ -15,7 +16,7 @@ export default function ModoTurma() {
   const [fase, setFase] = useState("espera"); // espera → batalha → vitoria
   const [vida, setVida] = useState(VIDA_CHEFAO);
   const [golpes, setGolpes] = useState([]); // últimos ataques (só acertos: ninguém é exposto por errar)
-  const [baralho, setBaralho] = useState(novoBaralho);
+  const [baralho, setBaralho] = useState(() => novoBaralho(questoesLocais()));
   const [indice, setIndice] = useState(0);
   const [resposta, setResposta] = useState(null);
   const [meus, setMeus] = useState({ acertos: 0, total: 0 });
@@ -43,8 +44,9 @@ export default function ModoTurma() {
 
   function responder(i) {
     if (resposta || fase !== "batalha") return;
-    const acertou = baralho[indice].opcoes[i].certa;
-    setResposta({ opcao: i, acertou });
+    const q = baralho[indice];
+    const acertou = q.opcoes[i].letra === q._certa;
+    setResposta({ opcao: i, acertou, certa: q._certa });
     setMeus((m) => ({ acertos: m.acertos + (acertou ? 1 : 0), total: m.total + 1 }));
     if (acertou) golpe("Você", true);
   }
@@ -52,7 +54,7 @@ export default function ModoTurma() {
   function proxima() {
     setResposta(null);
     if (indice + 1 >= baralho.length) {
-      setBaralho(novoBaralho());
+      setBaralho(novoBaralho(questoesLocais()));
       setIndice(0);
     } else setIndice(indice + 1);
   }
@@ -120,7 +122,7 @@ export default function ModoTurma() {
                 {resposta && !resposta.acertou && (
                   <div className="explicacao">
                     <p className="aviso-batalha neutro">Quase! A turma continua atacando.</p>
-                    <p><b>Por quê?</b> {questao.explicacao}</p>
+                    <p><b>Por quê?</b> {questao._explicacao}</p>
                     <button className="botao-ouro" type="button" onClick={proxima}>Próxima</button>
                   </div>
                 )}

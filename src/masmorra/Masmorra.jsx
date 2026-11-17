@@ -1,10 +1,12 @@
-// Protótipo da masmorra solo: escolher classe → 3 ondas (a última é o chefão) → vitória.
+// Masmorra solo: escolher classe → 3 ondas (a última é o chefão) → vitória.
 // Acertar = atacar. Errar = levar dano e ver a explicação. Entre as ondas, um baú com recompensas.
-import { useEffect, useReducer } from "react";
+// A "fonte" (fontes.js) decide de onde vêm as questões e quem corrige:
+// no protótipo é o próprio navegador; na sala do Mestre é o servidor.
+import { useEffect, useReducer, useState } from "react";
 import { Link } from "react-router-dom";
-import { CLASSES, ONDAS, POCOES, medalha } from "./dados.js";
+import { CLASSES, POCOES, medalha, ondasDe } from "./dados.js";
 import { regras, estadoInicial, resumoPorAssunto } from "./regras.js";
-import Questao from "./Questao.jsx";
+import Questao, { BarraVida } from "./Questao.jsx";
 import "./masmorra.css";
 
 function Coracoes({ vida, max, escudo }) {
@@ -18,20 +20,12 @@ function Coracoes({ vida, max, escudo }) {
   );
 }
 
-function BarraVida({ atual, max }) {
-  return (
-    <div className="barra-vida" aria-label={`Vida do monstro: ${atual} de ${max}`}>
-      <div style={{ width: (atual / max) * 100 + "%" }} />
-      <span>{atual} / {max}</span>
-    </div>
-  );
-}
-
-function EscolhaClasse({ onEscolher }) {
+function EscolhaClasse({ ondas, titulo, marca, prototipo, onEscolher }) {
+  const chefao = ondas[ondas.length - 1];
   return (
     <div className="tela">
-      <p className="marca-masmorra">Quizzes &amp; Masmorras · protótipo</p>
-      <h1 className="titulo-masmorra">Masmorra da Língua Portuguesa</h1>
+      <p className="marca-masmorra">{marca}</p>
+      <h1 className="titulo-masmorra">{titulo}</h1>
       <div className="pergaminho">
         <h2>Como jogar</h2>
         <ul className="lista-regras">
@@ -40,7 +34,7 @@ function EscolhaClasse({ onEscolher }) {
           <li>💔 <b>Errou?</b> O monstro te acerta, e você vê a explicação da resposta.</li>
           <li>🧪 <b>Poções</b> ajudam: cura, visão (tira 2 alternativas erradas) e escudo.</li>
           <li>🎁 Entre as ondas, abra o <b>baú</b> e escolha uma recompensa.</li>
-          <li>🐉 Vença 3 ondas e desencante o <b>Dragão da Gramática</b>!</li>
+          <li>{chefao.icone} Vença {ondas.length} ondas e desencante o <b>{chefao.nome}</b>!</li>
         </ul>
       </div>
       <h2 className="subtitulo">Escolha sua classe</h2>
@@ -53,14 +47,14 @@ function EscolhaClasse({ onEscolher }) {
           </button>
         ))}
       </div>
-      <Link className="link-claro" to="/masmorra/turma">Ver o modo turma (demonstração) →</Link>
+      {prototipo && <Link className="link-claro" to="/masmorra/turma">Ver o modo turma (demonstração) →</Link>}
       <Link className="link-claro" to="/">‹ Voltar ao início</Link>
     </div>
   );
 }
 
-function Batalha({ jogo, despachar }) {
-  const onda = ONDAS[jogo.onda];
+function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinuar }) {
+  const onda = ondas[jogo.onda];
   const questao = jogo.baralho[jogo.indice];
   const { resposta, efeito, heroi } = jogo;
   const derrotado = jogo.monstroVida <= 0;
@@ -69,7 +63,7 @@ function Batalha({ jogo, despachar }) {
   return (
     <div className="tela">
       <div className="topo-batalha">
-        <span className="onda">{onda.chefao ? "Chefão!" : `Onda ${jogo.onda + 1} de ${ONDAS.length}`}</span>
+        <span className="onda">{onda.chefao ? "Chefão!" : `Onda ${jogo.onda + 1} de ${ondas.length}`}</span>
         <span className="heroi-info">
           {jogo.classe.icone} {heroi.espada && "🗡️"} <Coracoes vida={heroi.vida} max={heroi.vidaMax} escudo={heroi.escudo} />
         </span>
@@ -103,10 +97,12 @@ function Batalha({ jogo, despachar }) {
         questao={questao}
         resposta={resposta}
         eliminadas={jogo.eliminadas}
-        onResponder={(i) => despachar({ tipo: "RESPONDER", opcao: i })}
+        desativada={enviando}
+        onResponder={onResponder}
       />
 
       <div aria-live="polite">
+        {erro && <p className="aviso-batalha ruim">{erro}</p>}
         {resposta?.acertou && (
           <p className="aviso-batalha bom">
             {derrotado
@@ -121,8 +117,8 @@ function Batalha({ jogo, despachar }) {
             <p className="aviso-batalha ruim">
               {resposta.bloqueou ? "🛡️ Seu escudo bloqueou o golpe!" : `${onda.icone} O monstro te acertou! −1 ❤️`}
             </p>
-            <p><b>Por quê?</b> {questao.explicacao}</p>
-            <button className="botao-ouro" type="button" onClick={() => despachar({ tipo: "AVANCAR" })}>Continuar</button>
+            {resposta.explicacao && <p><b>Por quê?</b> {resposta.explicacao}</p>}
+            <button className="botao-ouro" type="button" onClick={onContinuar}>Continuar</button>
           </div>
         )}
       </div>
@@ -145,9 +141,9 @@ function Batalha({ jogo, despachar }) {
                   key={id}
                   type="button"
                   className="pocao"
-                  disabled={!qtd || inutil}
+                  disabled={!qtd || inutil || enviando}
                   title={p.efeito}
-                  onClick={() => despachar({ tipo: "USAR_POCAO", pocao: id })}
+                  onClick={() => onPocao(id)}
                 >
                   <span className="icone-pocao">🧪{p.icone}</span>
                   <span>{p.nome.replace("Poção de ", "")}</span>
@@ -162,8 +158,8 @@ function Batalha({ jogo, despachar }) {
   );
 }
 
-function Bau({ jogo, despachar }) {
-  const proxima = ONDAS[jogo.onda + 1];
+function Bau({ jogo, ondas, despachar }) {
+  const proxima = ondas[jogo.onda + 1];
   return (
     <div className="tela">
       <h1 className="titulo-masmorra">🎁 Você encontrou um baú!</h1>
@@ -181,27 +177,30 @@ function Bau({ jogo, despachar }) {
   );
 }
 
-function Derrota({ jogo, despachar }) {
+function Derrota({ jogo, ondas, despachar }) {
   return (
     <div className="tela centro">
       <div className="icone-enorme">😵‍💫</div>
       <h1 className="titulo-masmorra">Você desmaiou!</h1>
       <p className="texto-claro">Calma, aprendiz: errar faz parte. Respire, revise as explicações e tente de novo.</p>
-      <p className="texto-claro">Você volta com os corações cheios, e o {ONDAS[jogo.onda].nome} também se recupera.</p>
+      <p className="texto-claro">Você volta com os corações cheios, e o {ondas[jogo.onda].nome} também se recupera.</p>
       <button className="botao-ouro" type="button" onClick={() => despachar({ tipo: "TENTAR_DE_NOVO" })}>Tentar de novo</button>
     </div>
   );
 }
 
-function Vitoria({ jogo, despachar }) {
+function Vitoria({ jogo, ondas, prototipo, despachar }) {
   const total = jogo.historico.length;
   const acertos = jogo.historico.filter((h) => h.acertou).length;
   const m = medalha(acertos, total, total - acertos);
   const assuntos = resumoPorAssunto(jogo.historico);
+  const chefao = ondas[ondas.length - 1];
   return (
     <div className="tela">
-      <div className="confete" aria-hidden="true">{["✨", "🎉", "⭐", "🎊", "✨", "⭐", "🎉"].map((c, i) => <span key={i} style={{ left: i * 14 + 4 + "%", animationDelay: i * 0.15 + "s" }}>{c}</span>)}</div>
-      <h1 className="titulo-masmorra centro">🐉 → ✨<br />O Dragão foi desencantado!</h1>
+      <div className="confete" aria-hidden="true">
+        {["✨", "🎉", "⭐", "🎊", "✨", "⭐", "🎉"].map((c, i) => <span key={i} style={{ left: i * 14 + 4 + "%", animationDelay: i * 0.15 + "s" }}>{c}</span>)}
+      </div>
+      <h1 className="titulo-masmorra centro">{chefao.icone} → ✨<br />O {chefao.nome} foi desencantado!</h1>
       <div className="pergaminho centro">
         <div className="icone-enorme">{m.icone}</div>
         <h2>{m.nome}</h2>
@@ -210,7 +209,11 @@ function Vitoria({ jogo, despachar }) {
       </div>
       <div className="pergaminho">
         <h2>Seu desempenho por assunto</h2>
-        <p className="mini">É isto que o Mestre vê no relatório (abaixo de 60% aparece “Reforçar”).</p>
+        <p className="mini">
+          {prototipo
+            ? "É isto que o Mestre vê no relatório (abaixo de 60% aparece “Reforçar”)."
+            : "Suas respostas já foram enviadas para o relatório do Mestre."}
+        </p>
         <table className="tabela-masmorra">
           <tbody>
             {assuntos.map((a) => (
@@ -224,13 +227,24 @@ function Vitoria({ jogo, despachar }) {
         </table>
       </div>
       <button className="botao-ouro" type="button" onClick={() => despachar({ tipo: "REINICIAR" })}>Jogar de novo</button>
-      <Link className="link-claro" to="/masmorra/turma">Ver o modo turma (demonstração) →</Link>
+      {prototipo && <Link className="link-claro" to="/masmorra/turma">Ver o modo turma (demonstração) →</Link>}
     </div>
   );
 }
 
-export default function Masmorra() {
+export default function Masmorra({ fonte, disciplina = "Língua Portuguesa", prototipo = false }) {
   const [jogo, despachar] = useReducer(regras, estadoInicial);
+  const [questoes, setQuestoes] = useState(null);
+  const [erro, setErro] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const ondas = ondasDe(disciplina);
+  const titulo = "Masmorra de " + disciplina;
+  const marca = prototipo ? "Quizzes & Masmorras · protótipo" : "Quizzes & Masmorras";
+
+  // Carrega as questões uma vez, ao abrir a masmorra.
+  useEffect(() => {
+    fonte.carregar().then(setQuestoes).catch((e) => setErro(e.message));
+  }, [fonte]);
 
   // Depois de um acerto, avança sozinho (o erro espera o "Continuar", para ler a explicação).
   useEffect(() => {
@@ -245,13 +259,79 @@ export default function Masmorra() {
     window.scrollTo(0, 0);
   }, [jogo.fase, jogo.onda]);
 
+  // Responder: a fonte corrige (no servidor, na sala real) e devolve o resultado para as regras.
+  async function responder(i) {
+    if (jogo.resposta || enviando) return;
+    const questao = jogo.baralho[jogo.indice];
+    setEnviando(true);
+    setErro("");
+    try {
+      const resultado = await fonte.responder(questao, questao.opcoes[i].letra);
+      despachar({ tipo: "RESPONDER", opcao: i, resultado });
+    } catch (e) {
+      setErro(e.message);
+    }
+    setEnviando(false);
+  }
+
+  async function usarPocao(id) {
+    if (id !== "visao") return despachar({ tipo: "USAR_POCAO", pocao: id });
+    setEnviando(true);
+    try {
+      const eliminar = await fonte.eliminar(jogo.baralho[jogo.indice]);
+      despachar({ tipo: "USAR_POCAO", pocao: "visao", eliminar });
+    } catch (e) {
+      setErro(e.message);
+    }
+    setEnviando(false);
+  }
+
+  if (!questoes) {
+    return (
+      <div className="masmorra">
+        <div className="tela centro">
+          <p className="marca-masmorra">{marca}</p>
+          <p className="texto-claro">{erro || "Abrindo a masmorra..."}</p>
+        </div>
+      </div>
+    );
+  }
+  if (questoes.length === 0) {
+    return (
+      <div className="masmorra">
+        <div className="tela centro">
+          <h1 className="titulo-masmorra">Masmorra vazia!</h1>
+          <p className="texto-claro">Não há questões para esta sala. Avise o Mestre.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="masmorra">
-      {jogo.fase === "escolha" && <EscolhaClasse onEscolher={(c) => despachar({ tipo: "ESCOLHER_CLASSE", classe: c })} />}
-      {jogo.fase === "batalha" && <Batalha jogo={jogo} despachar={despachar} />}
-      {jogo.fase === "bau" && <Bau jogo={jogo} despachar={despachar} />}
-      {jogo.fase === "derrota" && <Derrota jogo={jogo} despachar={despachar} />}
-      {jogo.fase === "vitoria" && <Vitoria jogo={jogo} despachar={despachar} />}
+      {jogo.fase === "escolha" && (
+        <EscolhaClasse
+          ondas={ondas}
+          titulo={titulo}
+          marca={marca}
+          prototipo={prototipo}
+          onEscolher={(c) => despachar({ tipo: "ESCOLHER_CLASSE", classe: c, questoes })}
+        />
+      )}
+      {jogo.fase === "batalha" && (
+        <Batalha
+          jogo={jogo}
+          ondas={ondas}
+          enviando={enviando}
+          erro={erro}
+          onResponder={responder}
+          onPocao={usarPocao}
+          onContinuar={() => despachar({ tipo: "AVANCAR" })}
+        />
+      )}
+      {jogo.fase === "bau" && <Bau jogo={jogo} ondas={ondas} despachar={despachar} />}
+      {jogo.fase === "derrota" && <Derrota jogo={jogo} ondas={ondas} despachar={despachar} />}
+      {jogo.fase === "vitoria" && <Vitoria jogo={jogo} ondas={ondas} prototipo={prototipo} despachar={despachar} />}
     </div>
   );
 }
