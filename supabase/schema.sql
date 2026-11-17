@@ -174,7 +174,8 @@ begin
   end if;
   insert into participante (sessao_id, nome)
   values (v_sessao.id, trim(p_nome)) returning id into v_id;
-  return json_build_object('participante_id', v_id, 'sessao_id', v_sessao.id, 'nome', trim(p_nome), 'modo', v_sessao.modo);
+  return json_build_object('participante_id', v_id, 'sessao_id', v_sessao.id, 'nome', trim(p_nome),
+    'modo', v_sessao.modo, 'disciplina', v_sessao.disciplina, 'serie', v_sessao.serie);
 end $$;
 
 -- Sorteia questões da disciplina/série da sessão (e da habilidade, se escolhida),
@@ -294,11 +295,20 @@ returns json language sql security invoker set search_path = public as $$
   from sessao s where s.id = p_sessao;
 $$;
 
+-- Mestre começa (ou recomeça) a batalha da turma. Usa o relógio do servidor (now()),
+-- o mesmo das respostas, para que nenhum golpe se perca. O RLS garante que só o dono da sala consegue.
+create or replace function iniciar_turma(p_sessao uuid, p_vida int)
+returns void language sql security invoker set search_path = public as $$
+  update sessao set chefao_vida = greatest(p_vida, 1), turma_iniciada_em = now()
+  where id = p_sessao;
+$$;
+
 -- Libera as funções para o aprendiz (anon) e para o Mestre (authenticated).
 grant execute on function responder_questao(uuid, int, text) to anon, authenticated;
 grant execute on function eliminar_alternativas(uuid, int) to anon, authenticated;
 grant execute on function estado_turma(uuid) to anon, authenticated;
 grant execute on function estado_turma_mestre(uuid) to authenticated;
+grant execute on function iniciar_turma(uuid, int) to authenticated;
 grant execute on function entrar_na_sessao(text, text) to anon, authenticated;
 grant execute on function buscar_questoes(uuid, int) to anon, authenticated;
 grant execute on function responder(uuid, int, text) to anon, authenticated;

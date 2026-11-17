@@ -14,6 +14,8 @@ export default function Painel({ sessao }) {
   const [ano, setAno] = useState("");
   const [disciplina, setDisciplina] = useState("");
   const [habilidadeId, setHabilidadeId] = useState(""); // "" = todas as habilidades
+  const [fonte, setFonte] = useState("todas"); // de onde vêm as questões: padrao, minhas ou todas
+  const [modo, setModo] = useState("solo"); // masmorra solo ou turma contra o chefão
   const [salas, setSalas] = useState(null);
   const [nova, setNova] = useState(null);
   const [erro, setErro] = useState("");
@@ -51,7 +53,7 @@ export default function Painel({ sessao }) {
     // participante(count) conta quantos aprendizes entraram.
     const { data, error } = await sb
       .from("sessao")
-      .select("id, codigo, habilidade_id, disciplina, serie, ativa, criada_em, participante(count)")
+      .select("id, codigo, habilidade_id, disciplina, serie, ativa, criada_em, modo, participante(count)")
       .order("criada_em", { ascending: false });
     if (error) return setErro("Não foi possível carregar as salas.");
     setSalas(data);
@@ -69,8 +71,10 @@ export default function Painel({ sessao }) {
         habilidade_id: habilidadeId ? Number(habilidadeId) : null,
         disciplina,
         serie: ano,
+        fonte,
+        modo,
       })
-      .select("id, codigo")
+      .select("id, codigo, modo")
       .single();
     setCriando(false);
     if (error) return setErro("Não deu para criar a sala. Tente de novo.");
@@ -119,6 +123,7 @@ export default function Painel({ sessao }) {
       <p className="marca">Quizzes &amp; Masmorras</p>
       <h1>Olá, {nome || "Mestre"}!</h1>
       <p className="muted">{usuario.email}</p>
+      <Link className="btn outline" to="/mestre/questoes">📚 Questões (padrão e minhas)</Link>
 
       <div className="card">
         <h2>Criar sala</h2>
@@ -141,6 +146,24 @@ export default function Painel({ sessao }) {
           <option value="">Todos os assuntos (misturar)</option>
           {opcoes.map((h) => <option key={h.id} value={h.id}>{h.nome}</option>)}
         </select>
+        <label htmlFor="fonte">Questões</label>
+        <select id="fonte" value={fonte} onChange={(e) => setFonte(e.target.value)}>
+          <option value="todas">Padrão + minhas</option>
+          <option value="padrao">Só as padrão</option>
+          <option value="minhas">Só as minhas</option>
+        </select>
+        <label>Modo de jogo</label>
+        <div className="grupo-opcoes" role="radiogroup">
+          {[
+            ["solo", "🗡️ Masmorra solo", "Cada aprendiz enfrenta 3 ondas e um chefão no próprio ritmo."],
+            ["turma", "🐉 Turma contra o chefão", "Todos atacam o mesmo chefão, projetado na lousa. A turma vence junta."],
+          ].map(([valor, titulo, texto]) => (
+            <label key={valor} className={"opcao-radio" + (modo === valor ? " marcada" : "")}>
+              <input type="radio" name="modo" value={valor} checked={modo === valor} onChange={() => setModo(valor)} />
+              <span><strong>{titulo}</strong><small>{texto}</small></span>
+            </label>
+          ))}
+        </div>
         <button className="btn" type="button" onClick={criarSala} disabled={criando || !habilidades.length}>
           {criando ? "Criando..." : "Criar sala"}
         </button>
@@ -153,6 +176,9 @@ export default function Painel({ sessao }) {
             <p className="muted">Link direto:</p>
             <p><a className="quebra" href={nova.link} target="_blank" rel="noopener">{nova.link}</a></p>
             <button className="btn outline" type="button" onClick={copiarLink}>{copiado ? "Link copiado!" : "Copiar link"}</button>
+            {nova.modo === "turma" && (
+              <Link className="btn" style={{ marginTop: 10 }} to={"/mestre/sessao/" + nova.id + "/lousa"}>🐉 Abrir a lousa</Link>
+            )}
             <Link className="btn outline" style={{ marginTop: 10 }} to={"/mestre/sessao/" + nova.id}>Ver relatório</Link>
           </div>
         )}
@@ -169,11 +195,14 @@ export default function Painel({ sessao }) {
               <span className={"selo " + (s.ativa ? "ok" : "fechada")}>{s.ativa ? "Aberta" : "Encerrada"}</span>
             </div>
             <p className="muted">
-              {s.serie} · {s.disciplina} · {nomeHabilidade(s.habilidade_id)}<br />
+              {s.modo === "turma" ? "🐉 Turma" : "🗡️ Solo"} · {s.serie} · {s.disciplina} · {nomeHabilidade(s.habilidade_id)}<br />
               {formatarData(s.criada_em)} · {(s.participante[0] || {}).count || 0} aprendiz(es)
             </p>
             <div className="linha">
-              <Link className="btn pequeno" to={"/mestre/sessao/" + s.id}>Relatório</Link>
+              <span style={{ display: "flex", gap: 8 }}>
+                <Link className="btn pequeno" to={"/mestre/sessao/" + s.id}>Relatório</Link>
+                {s.modo === "turma" && <Link className="btn pequeno" to={"/mestre/sessao/" + s.id + "/lousa"}>Lousa</Link>}
+              </span>
               <span style={{ display: "flex", gap: 8 }}>
                 <button className="btn pequeno outline" type="button" onClick={() => alternar(s)}>
                   {s.ativa ? "Encerrar" : "Reabrir"}

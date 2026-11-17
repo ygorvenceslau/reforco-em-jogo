@@ -27,7 +27,8 @@ export default function AprendizEntrar() {
       return;
     }
     sessionStorage.setItem("participante", JSON.stringify(data));
-    navegar("/jogar/quiz");
+    // A sala define o modo: masmorra solo ou turma contra o chefão.
+    navegar(data.modo === "turma" ? "/jogar/turma" : "/jogar/masmorra");
   }
 
   return (

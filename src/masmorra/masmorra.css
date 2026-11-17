@@ -168,3 +168,7 @@
 @media (prefers-reduced-motion: reduce) {
   .masmorra *, .masmorra *::before, .masmorra *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition: none !important; }
 }
+a.botao-ouro { text-align: center; text-decoration: none; }
+.botao-ouro:disabled { opacity: .5; cursor: not-allowed; }
+.codigo-lousa { margin: 0; font-size: 84px; font-weight: 900; letter-spacing: 10px; color: var(--ouro); text-shadow: 0 4px 0 #000; }
+@media (max-width: 520px) { .codigo-lousa { font-size: 52px; letter-spacing: 6px; } }
