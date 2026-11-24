@@ -47,8 +47,9 @@ export default function Lousa() {
   // QR Code com o link da sala: a turma entra apontando a câmera do celular.
   useEffect(() => {
     if (!sala) return;
-    QRCode.toDataURL(location.origin + "/jogar?codigo=" + sala.codigo, { margin: 1, width: 420 })
-      .then(setQr)
+    // Gerado como SVG (texto), e não com canvas: navegadores como o Brave bloqueiam o canvas por privacidade.
+    QRCode.toString(location.origin + "/jogar?codigo=" + sala.codigo, { type: "svg", margin: 1 })
+      .then((svg) => setQr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)))
       .catch(() => setQr(""));
   }, [sala?.codigo]);
 
@@ -145,6 +146,12 @@ export default function Lousa() {
               {vencida && <p className="titulo-masmorra">🏆 A turma venceu!</p>}
             </section>
             <section className="celular">
+              {qr && sala.ativa && !vencida && (
+                <div className="qr-batalha">
+                  <img src={qr} alt={"QR Code para entrar na sala " + sala.codigo} />
+                  <span>Chegou agora? Aponte a câmera ou use o código <b>{sala.codigo}</b></span>
+                </div>
+              )}
               <p className="rotulo">⚔️ Golpes da turma</p>
               <ul className="feed">
                 {estado.golpes.map((g) => <li key={g.id}>⚔️ {g.nome} acertou! −1</li>)}

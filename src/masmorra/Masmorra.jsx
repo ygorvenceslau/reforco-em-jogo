@@ -11,6 +11,15 @@ import { EfeitoAtaque, EfeitoEscudo, EfeitoGarras } from "./Efeitos.jsx";
 import { som, BotaoSom } from "./sons.jsx";
 import "./masmorra.css";
 
+// Frasco de poção desenhado em CSS (cor do líquido por tipo: cura, visão, escudo).
+function Frasco({ tipo, grande = false }) {
+  return (
+    <span className={"frasco frasco-" + tipo + (grande ? " grande" : "")} aria-hidden="true">
+      <span className="liquido"><i /><i /><i /></span>
+    </span>
+  );
+}
+
 function Coracoes({ vida, max, escudo }) {
   return (
     <span className="coracoes" aria-label={`${vida} de ${max} corações`}>
@@ -166,7 +175,7 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
                   title={p.efeito}
                   onClick={() => onPocao(id)}
                 >
-                  <span className="icone-pocao">🧪{p.icone}</span>
+                  <Frasco tipo={id} />
                   <span>{p.nome.replace("Poção de ", "")}</span>
                   <span className="qtd">×{qtd}</span>
                 </button>
@@ -188,7 +197,7 @@ function Bau({ jogo, ondas, despachar }) {
       <div className="classes">
         {jogo.bau.map((r) => (
           <button key={r.id} type="button" className="carta-classe" onClick={() => despachar({ tipo: "ESCOLHER_RECOMPENSA", recompensa: r })}>
-            <span className="icone-grande">{r.icone}</span>
+            <span className="icone-grande">{r.tipo === "pocao" ? <Frasco tipo={r.id} grande /> : r.icone}</span>
             <strong>{r.nome} <span className="tipo-recompensa">{r.tipo === "pocao" ? "poção" : "equipamento"}</span></strong>
             <span>{r.efeito}</span>
           </button>
