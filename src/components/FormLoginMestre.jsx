@@ -1,7 +1,7 @@
 // Login do Mestre. Quem confere a senha é o Supabase Auth, não o nosso código.
 // Usado na tela inicial e na página /mestre/entrar.
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 
 export default function FormLoginMestre() {
@@ -35,6 +35,7 @@ export default function FormLoginMestre() {
       <input id="senha" type="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
       {erro && <p className="erro" role="alert">{erro}</p>}
       <button className="btn" type="submit" disabled={enviando}>{enviando ? "Entrando..." : "Entrar"}</button>
+      <p className="link-esqueci"><Link to="/mestre/esqueci-senha">Esqueci minha senha</Link></p>
     </form>
   );
 }

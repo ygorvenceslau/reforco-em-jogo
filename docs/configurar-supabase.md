@@ -45,3 +45,18 @@ Abra `/diagnostico` no site. Cada item mostra ✔ ou ✖ e o que fazer. Faça lo
 | `Failed to fetch` | Sem internet ou URL errada | Confira a URL (termina em `.supabase.co`) e a conexão. |
 
 Se aparecer outro erro, copie a mensagem inteira e peça ajuda (pode colar no Claude Code).
+
+## Recuperação de senha ("Esqueci minha senha")
+O site já tem as telas (`/mestre/esqueci-senha` e `/mestre/nova-senha`). Para o e-mail chegar, configure no Supabase:
+
+1. **Authentication > URL Configuration**
+   - **Site URL:** `https://reforcoemjogo.netlify.app`
+   - **Redirect URLs:** adicione `https://reforcoemjogo.netlify.app/**`
+   Sem isso, o link do e-mail leva para o endereço errado.
+2. **E-mail de verdade (SMTP próprio).** O serviço de e-mail que vem com o Supabase só entrega para os e-mails da equipe do projeto e manda pouquíssimos por hora. Para funcionar com qualquer Mestre:
+   - Crie uma conta grátis num serviço de e-mail transacional (por exemplo, Resend ou Brevo) e pegue os dados de SMTP (servidor, porta, usuário e senha).
+   - Em **Authentication > Emails > SMTP Settings**, ligue **Enable Custom SMTP** e preencha esses dados.
+   - O remetente precisa ser de um domínio verificado no serviço escolhido (o próprio serviço explica como).
+3. (Opcional) Em **Authentication > Emails > Templates > Reset Password**, traduza o texto do e-mail para português.
+
+Enquanto o SMTP próprio não estiver ligado, dá para testar a recuperação usando o e-mail de quem é dono do projeto no Supabase.
