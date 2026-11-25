@@ -62,7 +62,14 @@ export default function Painel({ sessao }) {
     if (fonte === "padrao") consulta = consulta.is("professor_id", null);
     if (fonte === "minhas") consulta = consulta.eq("professor_id", usuario.id);
     setPrevia(null);
-    consulta.then(({ data, error }) => setPrevia(error ? [] : data));
+    // "valida" descarta a resposta de uma busca antiga, se os filtros mudaram nesse meio-tempo.
+    let valida = true;
+    consulta.then(({ data, error }) => {
+      if (valida) setPrevia(error ? [] : data);
+    });
+    return () => {
+      valida = false;
+    };
   }, [ano, disciplina, habilidadeId, fonte, habilidades.length]);
 
   async function carregarSalas() {
