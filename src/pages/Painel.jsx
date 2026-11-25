@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 import { formatarData, ordenarAnos } from "../lib/util.js";
+import Chips from "../components/Chips.jsx";
 
 export default function Painel({ sessao }) {
   const navegar = useNavigate();
@@ -21,6 +22,8 @@ export default function Painel({ sessao }) {
   const [erro, setErro] = useState("");
   const [criando, setCriando] = useState(false);
   const [copiado, setCopiado] = useState(false);
+  const [previa, setPrevia] = useState(null); // questões que a sala vai usar
+  const [verPrevia, setVerPrevia] = useState(false);
 
   // Ao abrir a tela: nome do Mestre, habilidades disponíveis e salas.
   useEffect(() => {
@@ -48,6 +51,20 @@ export default function Painel({ sessao }) {
     setHabilidadeId("");
   }, [ano, disciplinas.join("|")]);
 
+  // Prévia: as mesmas questões que o banco vai sortear para a sala (mesma série, disciplina,
+  // assunto e fonte). O RLS já limita às padrão e às deste Mestre.
+  useEffect(() => {
+    const ids = (habilidadeId ? opcoes.filter((h) => String(h.id) === String(habilidadeId)) : opcoes).map((h) => h.id);
+    if (!ids.length) return setPrevia([]);
+    let consulta = sb.from("questao")
+      .select("id, habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao, professor_id")
+      .in("habilidade_id", ids).order("id");
+    if (fonte === "padrao") consulta = consulta.is("professor_id", null);
+    if (fonte === "minhas") consulta = consulta.eq("professor_id", usuario.id);
+    setPrevia(null);
+    consulta.then(({ data, error }) => setPrevia(error ? [] : data));
+  }, [ano, disciplina, habilidadeId, fonte, habilidades.length]);
+
   async function carregarSalas() {
     // Não filtramos por Mestre aqui: o RLS já devolve só as salas dele.
     // participante(count) conta quantos aprendizes entraram.
@@ -61,7 +78,8 @@ export default function Painel({ sessao }) {
 
   async function criarSala() {
     setErro("");
-    if (!ano || !disciplina) return setErro("Escolha o ano e a disciplina.");
+    if (!ano || !disciplina) return setErro("Escolha a série e a disciplina.");
+    if (previa && previa.length === 0) return setErro("Não há questões com essas escolhas. Crie as suas em Questões.");
     setCriando(true);
     // O código de 6 caracteres é gerado pelo próprio banco (default gerar_codigo()).
     const { data, error } = await sb
@@ -127,31 +145,48 @@ export default function Painel({ sessao }) {
 
       <div className="card">
         <h2>Criar sala</h2>
-        <div className="filtros">
-          <div>
-            <label htmlFor="ano">Ano</label>
-            <select id="ano" value={ano} onChange={(e) => setAno(e.target.value)}>
-              {anos.map((a) => <option key={a}>{a}</option>)}
-            </select>
+        <Chips rotulo="Série / ano" valor={ano} onEscolher={setAno}
+          opcoes={anos.map((a) => ({ valor: a, rotulo: a }))} />
+        <Chips rotulo="Disciplina" valor={disciplina} onEscolher={(d) => { setDisciplina(d); setHabilidadeId(""); }}
+          opcoes={disciplinas.map((d) => ({ valor: d, rotulo: d }))} />
+        <Chips rotulo="Assunto" valor={String(habilidadeId)} onEscolher={(v) => setHabilidadeId(v)}
+          opcoes={[{ valor: "", rotulo: "Todos (misturar)" }, ...opcoes.map((h) => ({ valor: String(h.id), rotulo: h.nome + (h.professor_id ? " ✎" : "") }))]} />
+        <Chips rotulo="Questões" valor={fonte} onEscolher={setFonte}
+          opcoes={[{ valor: "todas", rotulo: "Padrão + minhas" }, { valor: "padrao", rotulo: "Só as padrão" }, { valor: "minhas", rotulo: "Só as minhas" }]} />
+
+        <div className="previa" aria-live="polite">
+          <div className="previa-topo">
+            <strong>
+              {previa === null ? "Contando questões..." : previa.length === 0 ? "⚠️ Nenhuma questão com essas escolhas" : `📋 ${previa.length} questão(ões) nesta sala`}
+            </strong>
+            {previa && previa.length > 0 && (
+              <button className="btn pequeno outline" type="button" onClick={() => setVerPrevia(!verPrevia)}>
+                {verPrevia ? "Esconder" : "Ver as questões"}
+              </button>
+            )}
           </div>
-          <div>
-            <label htmlFor="disciplina">Disciplina</label>
-            <select id="disciplina" value={disciplina} onChange={(e) => setDisciplina(e.target.value)}>
-              {disciplinas.map((d) => <option key={d}>{d}</option>)}
-            </select>
-          </div>
+          {previa && previa.length === 0 && (
+            <p className="muted dica">Escolha outro assunto ou <Link to="/mestre/questoes">crie as suas questões</Link>.</p>
+          )}
+          {previa && previa.length > 0 && previa.length < 13 && (
+            <p className="muted dica">Com poucas questões, os monstros ficam com menos vida: quem acerta tudo não repete nenhuma.</p>
+          )}
+          {verPrevia && previa && (
+            <ol className="previa-lista">
+              {previa.map((q) => (
+                <li key={q.id}>
+                  {q.enunciado}
+                  <small>
+                    Certa: <span className="certa">{q["alt_" + q.correta.toLowerCase()]}</span>
+                    {" · "}{q.professor_id ? "sua" : "padrão"}
+                    {" · "}{(opcoes.find((h) => h.id === q.habilidade_id) || {}).nome}
+                  </small>
+                </li>
+              ))}
+            </ol>
+          )}
         </div>
-        <label htmlFor="habilidade">Assunto</label>
-        <select id="habilidade" value={habilidadeId} onChange={(e) => setHabilidadeId(e.target.value)}>
-          <option value="">Todos os assuntos (misturar)</option>
-          {opcoes.map((h) => <option key={h.id} value={h.id}>{h.nome}</option>)}
-        </select>
-        <label htmlFor="fonte">Questões</label>
-        <select id="fonte" value={fonte} onChange={(e) => setFonte(e.target.value)}>
-          <option value="todas">Padrão + minhas</option>
-          <option value="padrao">Só as padrão</option>
-          <option value="minhas">Só as minhas</option>
-        </select>
+
         <label>Modo de jogo</label>
         <div className="grupo-opcoes" role="radiogroup">
           {[
@@ -164,7 +199,7 @@ export default function Painel({ sessao }) {
             </label>
           ))}
         </div>
-        <button className="btn" type="button" onClick={criarSala} disabled={criando || !habilidades.length}>
+        <button className="btn" type="button" onClick={criarSala} disabled={criando || !habilidades.length || (previa && previa.length === 0)}>
           {criando ? "Criando..." : "Criar sala"}
         </button>
         {erro && <p className="erro" role="alert">{erro}</p>}

@@ -2,7 +2,7 @@
 
 Site: https://reforcoemjogo.netlify.app
 
-Plataforma gamificada para reforço escolar no Ensino Fundamental. O Mestre (docente, monitor ou quem reúne amigos para estudar) cria uma sala, os Aprendizes entram pelo celular com um código e enfrentam monstros respondendo questões. No final, o Mestre vê quem precisa de reforço e em qual assunto.
+Plataforma gamificada para reforço escolar. Já vem com questões do Ensino Fundamental, e cada Mestre pode criar questões para qualquer série, disciplina ou assunto. O Mestre (docente, monitor ou quem reúne amigos para estudar) cria uma sala, os Aprendizes entram pelo celular com um código e enfrentam monstros respondendo questões. No final, o Mestre vê quem precisa de reforço e em qual assunto.
 
 Projeto integrado das disciplinas de Extensão (PIES I), CTS, UX, Front End e Banco de Dados.
 

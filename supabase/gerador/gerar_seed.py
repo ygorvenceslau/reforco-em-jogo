@@ -18,9 +18,9 @@ begin
   create temp table hab_dup on commit drop as
     select h.id as velho, k.id as novo
     from habilidade h
-    join (select disciplina, serie, nome, min(id) as id from habilidade group by 1, 2, 3) k
+    join (select disciplina, serie, nome, min(id) as id from habilidade where professor_id is null group by 1, 2, 3) k
       on k.disciplina = h.disciplina and k.serie = h.serie and k.nome = h.nome
-    where h.id <> k.id;
+    where h.id <> k.id and h.professor_id is null;
   update questao q set habilidade_id = d.novo from hab_dup d where q.habilidade_id = d.velho;
   update sessao s set habilidade_id = d.novo from hab_dup d where s.habilidade_id = d.velho;
   delete from habilidade h using hab_dup d where h.id = d.velho;
@@ -30,10 +30,6 @@ begin
   where k.habilidade_id = q.habilidade_id and k.enunciado = q.enunciado and k.alt_a = q.alt_a
     and k.id < q.id and q.professor_id is null and k.professor_id is null
     and not exists (select 1 from resposta r where r.questao_id = q.id);
-
-  if not exists (select 1 from pg_constraint where conname = 'habilidade_unica') then
-    alter table habilidade add constraint habilidade_unica unique (disciplina, serie, nome);
-  end if;
 end $$;
 
 -- 2) Habilidades
@@ -47,7 +43,7 @@ for (disc, ano), mapa in Q.items():
 partes.append(",\n".join(habs))
 partes.append(""") as v(disciplina, serie, nome)
 where not exists (select 1 from habilidade h
-  where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome);
+  where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome and h.professor_id is null);
 
 -- 3) Questões (uma instrução por habilidade). Também preenche a explicação de questões antigas sem explicação.""")
 
@@ -64,7 +60,7 @@ for (disc, ano), mapa in Q.items():
 with v(enunciado, a, b, c, d, correta, explicacao) as (values
 {",".join(chr(10) + l for l in linhas).lstrip(chr(10))}
 ),
-h as (select id from habilidade where disciplina = {lit(disc)} and serie = {lit(ano)} and nome = {lit(nome)}),
+h as (select id from habilidade where disciplina = {lit(disc)} and serie = {lit(ano)} and nome = {lit(nome)} and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h

@@ -97,9 +97,29 @@ th { color: var(--muted); font-size: 14px; text-transform: uppercase; letter-spa
 
 /* Botão de tema (claro/escuro), fixo no canto das telas do Mestre */
 .botao-tema {
-  position: fixed; top: 12px; right: 12px; z-index: 50; width: 44px; height: 44px; border-radius: 50%;
+  position: absolute; top: 12px; right: 12px; z-index: 50; width: 44px; height: 44px; border-radius: 50%;
   border: 1px solid var(--line); background: var(--card); color: var(--ink); font-size: 20px; cursor: pointer; box-shadow: var(--sombra);
 }
 .botao-tema:hover { border-color: var(--teal); }
 main > .marca:first-child, main > a:first-child { margin-right: 52px; }
 .link-esqueci { margin: 10px 0 0; text-align: center; font-size: 15px; font-weight: 700; }
+
+/* Opções para marcar (chips) */
+.chips { border: 0; margin: 4px 0 8px; padding: 0; min-width: 0; }
+.chips legend { font-weight: 700; padding: 0; margin-bottom: 6px; }
+.chips-lista { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font: inherit; font-weight: 700; font-size: 15px; padding: 8px 14px; border-radius: 99px; cursor: pointer;
+  border: 2px solid var(--borda-campo); background: var(--campo); color: var(--ink); transition: border-color .12s, background .12s;
+}
+.chip:hover { border-color: var(--teal); }
+.chip.ativo { border-color: var(--teal); background: var(--tint); color: var(--teal); }
+.chips-busca { margin: 0 0 8px; padding: 9px 12px; }
+
+/* Prévia das questões */
+.previa { border: 1px dashed var(--borda-campo); border-radius: 12px; padding: 12px; margin: 6px 0 12px; }
+.previa-topo { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.previa-lista { margin: 10px 0 0; padding-left: 20px; display: grid; gap: 10px; }
+.previa-lista li { line-height: 1.35; }
+.previa-lista .certa { color: var(--ok); font-weight: 800; }
+.previa-lista small { color: var(--muted); display: block; }
