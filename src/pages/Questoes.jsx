@@ -97,6 +97,7 @@ export default function Questoes({ sessao }) {
   const [questoes, setQuestoes] = useState(null);
   const [editando, setEditando] = useState(null);
   const [erro, setErro] = useState("");
+  const [versao, setVersao] = useState(0); // muda para pedir uma nova busca da lista
 
   async function carregarHabilidades() {
     // O RLS devolve as habilidades padrão e as criadas por este Mestre.
@@ -122,20 +123,30 @@ export default function Questoes({ sessao }) {
   const doFiltro = habilidades.filter((h) => h.serie === ano && h.disciplina === disciplina);
   const habDe = (id) => habilidades.find((h) => h.id === id) || {};
 
-  async function carregar() {
-    if (!doFiltro.length) return setQuestoes([]);
+  // Busca a lista sempre que os filtros mudam ou algo é salvo/excluído.
+  // "valida" descarta respostas atrasadas de buscas antigas (sem isso, uma busca lenta
+  // com os filtros anteriores podia chegar por último e mostrar a lista errada).
+  useEffect(() => {
+    let valida = true;
+    if (!doFiltro.length) {
+      setQuestoes([]);
+      return;
+    }
     let consulta = sb
       .from("questao")
       .select("id, habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao, professor_id")
       .in("habilidade_id", doFiltro.map((h) => h.id))
       .order("id");
     consulta = aba === "minhas" ? consulta.eq("professor_id", usuario.id) : consulta.is("professor_id", null);
-    const { data, error } = await consulta;
-    if (error) return setErro("Não foi possível carregar as questões.");
-    setQuestoes(data);
-  }
-
-  useEffect(() => { carregar(); }, [ano, disciplina, aba, habilidades.length]);
+    consulta.then(({ data, error }) => {
+      if (!valida) return;
+      if (error) return setErro("Não foi possível carregar as questões.");
+      setQuestoes(data);
+    });
+    return () => {
+      valida = false;
+    };
+  }, [ano, disciplina, aba, habilidades.length, versao]);
 
   // Acha a habilidade (série + disciplina + assunto) já existente, ou cria uma deste Mestre.
   async function habilidadePara(q) {
@@ -172,7 +183,7 @@ export default function Questoes({ sessao }) {
     setAno(h.serie);
     setDisciplina(h.disciplina);
     setAba("minhas");
-    carregar();
+    setVersao((v) => v + 1);
     return "";
   }
 
@@ -183,7 +194,7 @@ export default function Questoes({ sessao }) {
       // Questão já respondida em alguma sala não pode ser apagada (o relatório depende dela).
       return setErro("Não deu para excluir: esta questão já foi respondida em alguma sala.");
     }
-    carregar();
+    setVersao((v) => v + 1);
   }
 
   // Abre o formulário a partir de uma questão (para editar ou duplicar).
