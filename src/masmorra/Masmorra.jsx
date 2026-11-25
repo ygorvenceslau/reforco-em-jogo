@@ -113,7 +113,7 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
           </div>
         )}
         <p className="nome-monstro">{onda.nome}</p>
-        <BarraVida atual={jogo.monstroVida} max={onda.vida} />
+        <BarraVida atual={jogo.monstroVida} max={jogo.vidas[jogo.onda]} />
       </div>
 
       {efeito?.tipo === "erro" && (
@@ -127,6 +127,7 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
         questao={questao}
         resposta={resposta}
         eliminadas={jogo.eliminadas}
+        revisao={jogo.revisao}
         desativada={enviando}
         onResponder={onResponder}
       />

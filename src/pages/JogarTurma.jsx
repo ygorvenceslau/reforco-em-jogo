@@ -22,6 +22,8 @@ export default function JogarTurma() {
   const [indice, setIndice] = useState(0);
   const [resposta, setResposta] = useState(null);
   const [meus, setMeus] = useState({ acertos: 0, total: 0 });
+  const [erradas, setErradas] = useState([]); // ids das questões erradas, para a revisão
+  const [revisao, setRevisao] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -50,12 +52,15 @@ export default function JogarTurma() {
     }).catch((e) => setErro(e.message));
   }, [fonte]);
 
+  // Passa por todas as questões sem repetir; quando acabam, revisa só as que o aprendiz errou
+  // (se não errou nenhuma, revisa todas). Mesma ideia da masmorra solo.
   function proxima() {
     setResposta(null);
-    if (indice + 1 >= baralho.length) {
-      setBaralho(novoBaralho(questoes));
-      setIndice(0);
-    } else setIndice(indice + 1);
+    if (indice + 1 < baralho.length) return setIndice(indice + 1);
+    const paraRevisar = questoes.filter((q) => erradas.includes(q.id));
+    setBaralho(novoBaralho(paraRevisar.length ? paraRevisar : questoes));
+    setIndice(0);
+    setRevisao(true);
   }
 
   // Depois de um acerto, a próxima questão vem sozinha.
@@ -88,6 +93,7 @@ export default function JogarTurma() {
     try {
       const r = await fonte.responder(q, q.opcoes[i].letra);
       setResposta({ opcao: i, acertou: r.acertou, certa: r.certa, explicacao: r.explicacao });
+      setErradas((lista) => (r.acertou ? lista.filter((id) => id !== q.id) : [...new Set([...lista, q.id])]));
       if (r.acertou) som.acerto();
       else som.erro();
       setMeus((m) => ({ acertos: m.acertos + (r.acertou ? 1 : 0), total: m.total + 1 }));
@@ -141,7 +147,7 @@ export default function JogarTurma() {
           <p className="nome-monstro">{chefao.nome}</p>
           <BarraVida atual={vida} max={vidaMax} />
         </div>
-        <Questao questao={q} resposta={resposta} desativada={enviando} onResponder={responder} />
+        <Questao questao={q} resposta={resposta} desativada={enviando} revisao={revisao} onResponder={responder} />
         {erro && <p className="aviso-batalha ruim">{erro}</p>}
         {resposta?.acertou && <p className="aviso-batalha bom">⚔️ Você atacou o chefão!</p>}
         {resposta && !resposta.acertou && (

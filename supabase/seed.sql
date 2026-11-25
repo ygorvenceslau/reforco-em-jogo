@@ -9,9 +9,9 @@ begin
   create temp table hab_dup on commit drop as
     select h.id as velho, k.id as novo
     from habilidade h
-    join (select disciplina, serie, nome, min(id) as id from habilidade group by 1, 2, 3) k
+    join (select disciplina, serie, nome, min(id) as id from habilidade where professor_id is null group by 1, 2, 3) k
       on k.disciplina = h.disciplina and k.serie = h.serie and k.nome = h.nome
-    where h.id <> k.id;
+    where h.id <> k.id and h.professor_id is null;
   update questao q set habilidade_id = d.novo from hab_dup d where q.habilidade_id = d.velho;
   update sessao s set habilidade_id = d.novo from hab_dup d where s.habilidade_id = d.velho;
   delete from habilidade h using hab_dup d where h.id = d.velho;
@@ -21,10 +21,6 @@ begin
   where k.habilidade_id = q.habilidade_id and k.enunciado = q.enunciado and k.alt_a = q.alt_a
     and k.id < q.id and q.professor_id is null and k.professor_id is null
     and not exists (select 1 from resposta r where r.questao_id = q.id);
-
-  if not exists (select 1 from pg_constraint where conname = 'habilidade_unica') then
-    alter table habilidade add constraint habilidade_unica unique (disciplina, serie, nome);
-  end if;
 end $$;
 
 -- 2) Habilidades
@@ -79,7 +75,7 @@ select v.* from (values
   ('Tecnologia e Computação', '9º ano', 'Programação básica')
 ) as v(disciplina, serie, nome)
 where not exists (select 1 from habilidade h
-  where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome);
+  where h.disciplina = v.disciplina and h.serie = v.serie and h.nome = v.nome and h.professor_id is null);
 
 -- 3) Questões (uma instrução por habilidade). Também preenche a explicação de questões antigas sem explicação.
 
@@ -91,7 +87,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual palavra rima com JANELA?', 'Panela', 'Janeiro', 'Sapato', 'Lápis', 'A', 'Janela e panela terminam com -ELA: por isso rimam.'),
   ('Quais destas letras são vogais?', 'B, C, D', 'A, E, I', 'M, N, P', 'R, S, T', 'B', 'As vogais são A, E, I, O e U.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '1º ano' and nome = 'Letras e sons'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '1º ano' and nome = 'Letras e sons' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -112,7 +108,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual palavra tem só uma sílaba?', 'Mesa', 'Pé', 'Bola', 'Dado', 'B', 'Pé se fala de uma vez só: tem 1 sílaba.'),
   ('Qual é a primeira sílaba de SAPATO?', 'PA', 'TO', 'SA', 'SAP', 'C', 'SA-PA-TO: a primeira sílaba é SA.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '1º ano' and nome = 'Sílabas'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '1º ano' and nome = 'Sílabas' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -133,7 +129,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Complete com M ou N: CA_PO', 'campo', 'canpo', 'caapo', 'capo', 'A', 'Antes de P e B usamos M: campo.'),
   ('Qual palavra começa com letra maiúscula por ser nome de pessoa?', 'mesa', 'Ana', 'bola', 'rua', 'B', 'Nomes de pessoas começam com letra maiúscula: Ana.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '2º ano' and nome = 'Ortografia'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '2º ano' and nome = 'Ortografia' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -154,7 +150,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual destas frases é o título de uma história?', 'Era uma vez...', 'O Lobo e os Três Porquinhos', 'Fim', 'E viveram felizes', 'B', 'O título é o nome da história e aparece antes do texto.'),
   ('"Bia regava as flores todos os dias." O que Bia fazia?', 'Plantava árvores', 'Regava as flores', 'Colhia frutas', 'Dormia cedo', 'B', 'O texto diz que Bia regava as flores.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '2º ano' and nome = 'Leitura e compreensão'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '2º ano' and nome = 'Leitura e compreensão' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -175,7 +171,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual pergunta está pontuada corretamente?', 'Você vem amanhã.', 'Você vem amanhã?', 'Você, vem amanhã', 'Você vem? amanhã', 'B', 'Uma pergunta termina com ponto de interrogação, no fim da frase.'),
   ('Para que serve a vírgula em "Comprei arroz, feijão e ovos"?', 'Separar itens de uma lista', 'Fazer uma pergunta', 'Terminar a frase', 'Mostrar emoção', 'A', 'Na lista, a vírgula separa os itens: arroz, feijão e ovos.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '3º ano' and nome = 'Pontuação'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '3º ano' and nome = 'Pontuação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -196,7 +192,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('"Era uma vez..." é um começo típico de:', 'Notícia', 'Conto de fadas', 'Receita', 'Convite', 'B', 'Os contos de fadas costumam começar com "Era uma vez".'),
   ('Em um convite de aniversário, o que NÃO pode faltar?', 'A data, a hora e o local', 'A receita do bolo', 'Uma piada', 'O preço dos presentes', 'A', 'Um convite precisa dizer quando e onde a festa vai acontecer.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '3º ano' and nome = 'Gêneros textuais'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '3º ano' and nome = 'Gêneros textuais' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -217,7 +213,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em "A casa é enorme", a palavra "enorme" pode ser trocada por:', 'pequena', 'gigante', 'velha', 'bonita', 'B', 'Enorme e gigante são sinônimos: querem dizer muito grande.'),
   ('Qual par é de sinônimos?', 'rápido / lento', 'bonito / feio', 'começar / iniciar', 'cheio / vazio', 'C', 'Começar e iniciar têm o mesmo sentido. Os outros pares são antônimos.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '4º ano' and nome = 'Sinônimos e antônimos'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '4º ano' and nome = 'Sinônimos e antônimos' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -238,7 +234,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual palavra está escrita corretamente?', 'enchergar', 'enxergar', 'emxergar', 'encherguar', 'B', 'Enxergar se escreve com X. Depois de EN, a maioria das palavras usa X.'),
   ('Qual frase está correta?', 'Nós vai à escola.', 'Nós vamos à escola.', 'Nós vamo à escola.', 'Nós foi à escola.', 'B', 'Com "nós", o verbo termina em -mos: nós vamos.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '4º ano' and nome = 'Ortografia e acentuação'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '4º ano' and nome = 'Ortografia e acentuação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -259,7 +255,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('O cachorro de Lia fugiu pelo portão aberto. Lia saiu chamando por ele até encontrá-lo na praça. O que Lia fez depois que o cachorro fugiu?', 'Foi dormir', 'Procurou o cachorro e o encontrou na praça', 'Ganhou outro cachorro', 'Fechou o portão e esperou', 'B', 'O texto diz que Lia procurou o cachorro até encontrá-lo na praça.'),
   ('"Choveu tanto que a rua virou um rio." A frase quer dizer que:', 'Um rio passou pela rua', 'A rua ficou muito alagada', 'A rua foi fechada', 'Parou de chover', 'B', 'É um exagero: a rua ficou com tanta água que parecia um rio.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Interpretação de texto'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Interpretação de texto' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -281,7 +277,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em "Nós brincamos no parque", a palavra "Nós" é um:', 'pronome', 'verbo', 'adjetivo', 'advérbio', 'A', 'Pronome substitui o nome das pessoas: "nós" é quem fala e mais alguém.'),
   ('Qual é o plural de "pão"?', 'pãos', 'pães', 'pões', 'pãoes', 'B', 'Algumas palavras em -ão fazem o plural em -ães: pão, pães; cão, cães.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Classes de palavras'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Classes de palavras' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -303,7 +299,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual palavra precisa de acento?', 'mesa', 'lapis', 'casa', 'bola', 'B', 'Lápis é paroxítona terminada em S, por isso leva acento: lá-pis.'),
   ('Em qual frase a palavra entre aspas está certa?', 'Eu vou "mas" tarde.', 'Ele quer "mais" bolo.', 'Não sei "porque" ele saiu.', 'Ela "concerta" o carro.', 'B', '"Mais" indica quantidade. "Mas" indica oposição, como "porém".')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Ortografia'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '5º ano' and nome = 'Ortografia' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -324,7 +320,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Complete: "Ela ficou ___ preocupada."', 'meia', 'meio', 'meios', 'meias', 'B', '"Meio" no sentido de "um pouco" não muda: meio preocupada.'),
   ('Qual frase está correta?', 'A gente fomos ao cinema.', 'A gente foi ao cinema.', 'A gente fui ao cinema.', 'A gente vamos ao cinema.', 'B', '"A gente" pede o verbo no singular, como "ela": a gente foi.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '6º ano' and nome = 'Concordância'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '6º ano' and nome = 'Concordância' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -345,7 +341,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Uma notícia de jornal deve responder principalmente:', 'O quê, quem, quando, onde, como e por quê', 'Só a opinião do jornalista', 'Uma rima', 'Uma receita', 'A', 'A notícia informa um fato respondendo a essas perguntas.'),
   ('"Ana estudou muito, mas não passou na prova." A palavra "mas" indica:', 'adição', 'oposição', 'tempo', 'lugar', 'B', '"Mas" liga ideias contrárias: estudou, porém não passou.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '6º ano' and nome = 'Interpretação e inferência'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '6º ano' and nome = 'Interpretação e inferência' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -366,7 +362,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em "Tic-tac, fazia o relógio", "tic-tac" é uma:', 'Onomatopeia', 'Metáfora', 'Antítese', 'Ironia', 'A', 'Onomatopeia é a palavra que imita um som.'),
   ('"Ele é uma fera no futebol." Que figura é essa?', 'Metáfora', 'Onomatopeia', 'Comparação', 'Pleonasmo', 'A', 'Metáfora é uma comparação sem o "como": ele é muito bom, como uma fera.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '7º ano' and nome = 'Figuras de linguagem'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '7º ano' and nome = 'Figuras de linguagem' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -387,7 +383,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual é o infinitivo de "cantávamos"?', 'cantar', 'cantando', 'cantado', 'canta', 'A', 'O infinitivo é o nome do verbo, terminado em -ar, -er ou -ir: cantar.'),
   ('Complete: "Se eu ___ tempo, iria à festa."', 'tenho', 'tivesse', 'terei', 'tive', 'B', 'Uma hipótese com "se" pede o subjuntivo: se eu tivesse.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '7º ano' and nome = 'Verbos e tempos verbais'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '7º ano' and nome = 'Verbos e tempos verbais' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -408,7 +404,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em "Maria e João dançaram", o sujeito é:', 'simples', 'composto', 'oculto', 'inexistente', 'B', 'Tem dois núcleos (Maria e João): sujeito composto.'),
   ('Em "O cachorro latiu alto", qual é o predicado?', 'O cachorro', 'latiu alto', 'cachorro', 'O', 'B', 'Predicado é o que se diz do sujeito: latiu alto.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '8º ano' and nome = 'Sujeito e predicado'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '8º ano' and nome = 'Sujeito e predicado' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -429,7 +425,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual é o melhor argumento para "Devemos economizar água"?', 'A água potável é limitada e essencial à vida.', 'Eu gosto de água.', 'A água é transparente.', 'Meu vizinho economiza.', 'A', 'Um bom argumento traz uma razão forte e verdadeira, não só gosto pessoal.'),
   ('"Embora estivesse cansado, terminou o trabalho." "Embora" indica:', 'concessão (ideia contrária)', 'causa', 'finalidade', 'conclusão', 'A', '"Embora" apresenta um obstáculo que não impediu a ação: é concessão.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '8º ano' and nome = 'Argumentação'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '8º ano' and nome = 'Argumentação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -450,7 +446,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('"Ele não veio, pois estava doente." "Pois" indica:', 'explicação (causa)', 'conclusão', 'oposição', 'adição', 'A', '"Pois" explica o motivo de ele não ter vindo.'),
   ('Em "Marina chegou. Ela trouxe bolo.", qual palavra retoma "Marina"?', 'Ela', 'trouxe', 'bolo', 'chegou', 'A', 'O pronome "ela" retoma Marina e evita repetir o nome: isso é coesão.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '9º ano' and nome = 'Conectivos e coesão'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '9º ano' and nome = 'Conectivos e coesão' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -471,7 +467,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Complete: "Você saiu cedo ___?"', 'por que', 'por quê', 'porque', 'porquê', 'B', 'No fim da pergunta, "por quê" é separado e leva acento.'),
   ('Qual frase NÃO deve ter crase?', 'Fui à praia.', 'Dei o livro à professora.', 'Andei a cavalo.', 'Cheguei à noite.', 'C', 'Antes de palavra masculina (cavalo) não há crase.')
 ),
-h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '9º ano' and nome = 'Crase e porquês'),
+h as (select id from habilidade where disciplina = 'Língua Portuguesa' and serie = '9º ano' and nome = 'Crase e porquês' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -492,7 +488,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quantas patas tem um cachorro?', '2', '3', '4', '6', 'C', 'O cachorro tem 4 patas.'),
   ('Qual número vem antes do 10?', '11', '8', '9', '7', 'C', 'Contando: 8, 9, 10. Antes do 10 vem o 9.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '1º ano' and nome = 'Contagem e números'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '1º ano' and nome = 'Contagem e números' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -513,7 +509,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Havia 6 pássaros. 1 voou. Quantos ficaram?', '5', '6', '7', '4', 'A', 'Voar embora é tirar: 6 − 1 = 5.'),
   ('Quanto é 4 + 4?', '6', '7', '8', '9', 'C', '4 + 4 = 8. É o dobro de 4.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '1º ano' and nome = 'Adição e subtração'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '1º ano' and nome = 'Adição e subtração' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -534,7 +530,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual é o dobro de 6?', '8', '10', '12', '3', 'C', 'Dobro é duas vezes o número: 6 + 6 = 12.'),
   ('Quanto é 30 + 20?', '40', '50', '60', '10', 'B', '3 dezenas + 2 dezenas = 5 dezenas = 50.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '2º ano' and nome = 'Adição e subtração'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '2º ano' and nome = 'Adição e subtração' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -555,7 +551,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Que mês vem depois de março?', 'Fevereiro', 'Abril', 'Maio', 'Junho', 'B', 'Janeiro, fevereiro, março, abril...'),
   ('Uma nota de 10 reais e uma de 5 reais somam:', 'R$ 10', 'R$ 15', 'R$ 20', 'R$ 50', 'B', '10 + 5 = 15 reais.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '2º ano' and nome = 'Medidas e tempo'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '2º ano' and nome = 'Medidas e tempo' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -576,7 +572,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quanto é 2 × 9?', '11', '16', '18', '29', 'C', '2 × 9 é o dobro de 9: 9 + 9 = 18.'),
   ('Qual é o triplo de 3?', '6', '9', '12', '33', 'B', 'Triplo é três vezes: 3 × 3 = 9.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '3º ano' and nome = 'Multiplicação'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '3º ano' and nome = 'Multiplicação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -597,7 +593,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Como se escreve "cento e cinco" em algarismos?', '15', '105', '150', '1005', 'B', 'Cento = 100, e cinco = 5: 105.'),
   ('Qual número vem logo depois de 199?', '190', '200', '198', '1100', 'B', '199 + 1 = 200.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '3º ano' and nome = 'Sistema de numeração'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '3º ano' and nome = 'Sistema de numeração' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -618,7 +614,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quanto é 35 ÷ 5?', '5', '6', '7', '8', 'C', '5 × 7 = 35, então 35 ÷ 5 = 7.'),
   ('Quantos grupos de 6 cabem em 24?', '3', '4', '5', '6', 'B', '6 × 4 = 24: cabem 4 grupos.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '4º ano' and nome = 'Divisão'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '4º ano' and nome = 'Divisão' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -639,7 +635,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Em 3/5, o número 5 indica:', 'em quantas partes o inteiro foi dividido', 'quantas partes foram pegas', 'o resultado da conta', 'nada', 'A', 'O número de baixo (denominador) diz em quantas partes o inteiro foi dividido.'),
   ('Quanto é 1/4 de 12?', '2', '3', '4', '6', 'B', '1/4 de 12 é dividir 12 por 4: 3.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '4º ano' and nome = 'Frações'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '4º ano' and nome = 'Frações' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -660,7 +656,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quanto é 1,2 + 0,3?', '1,5', '1,23', '4,2', '1,32', 'A', 'Some décimos com décimos: 2 + 3 = 5. Fica 1,5.'),
   ('Quantos centavos há em R$ 1,00?', '10', '100', '1000', '50', 'B', '1 real = 100 centavos.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '5º ano' and nome = 'Números decimais'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '5º ano' and nome = 'Números decimais' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -681,7 +677,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quantas faces tem um cubo?', '4', '6', '8', '12', 'B', 'O cubo tem 6 faces, como um dado.'),
   ('Um ângulo reto mede:', '45°', '90°', '180°', '360°', 'B', 'O ângulo reto mede 90°, como o canto de uma folha.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '5º ano' and nome = 'Geometria'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '5º ano' and nome = 'Geometria' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -702,7 +698,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual é o MMC de 4 e 6?', '2', '10', '12', '24', 'C', 'Múltiplos de 4: 4, 8, 12... Múltiplos de 6: 6, 12... O menor em comum é 12.'),
   ('Qual destes números é primo?', '9', '15', '13', '21', 'C', '13 só é divisível por 1 e por ele mesmo. Os outros têm mais divisores.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '6º ano' and nome = 'Operações e expressões'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '6º ano' and nome = 'Operações e expressões' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -723,7 +719,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Um produto de R$ 100 teve 20% de desconto. Qual é o novo preço?', 'R$ 20', 'R$ 80', 'R$ 120', 'R$ 98', 'B', '20% de 100 = 20. 100 − 20 = 80 reais.'),
   ('Numa turma de 30 alunos, 15 são meninas. Qual a porcentagem de meninas?', '15%', '30%', '50%', '45%', 'C', '15 é a metade de 30: 50%.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '6º ano' and nome = 'Porcentagem'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '6º ano' and nome = 'Porcentagem' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -744,7 +740,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('A temperatura era −2 °C e subiu 6 °C. Qual é a nova temperatura?', '4 °C', '8 °C', '−8 °C', '−4 °C', 'A', '−2 + 6 = 4.'),
   ('Quanto é 7 − 10?', '3', '−3', '17', '−17', 'B', 'Tirar 10 de 7 passa do zero: 7 − 10 = −3.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '7º ano' and nome = 'Números inteiros'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '7º ano' and nome = 'Números inteiros' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -765,7 +761,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('O dobro de um número mais 3 é 11. Qual é o número?', '4', '5', '7', '8', 'A', '2x + 3 = 11, então 2x = 8 e x = 4.'),
   ('Resolva: x / 2 = 9', 'x = 4,5', 'x = 11', 'x = 18', 'x = 7', 'C', 'Se a metade de x é 9, então x = 9 × 2 = 18.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '7º ano' and nome = 'Equações do 1º grau'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '7º ano' and nome = 'Equações do 1º grau' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -786,7 +782,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Quanto é 2⁴?', '8', '16', '6', '32', 'B', '2 × 2 × 2 × 2 = 16.'),
   ('Quanto é √81 + √16?', '13', '10', '97', '11', 'A', '√81 = 9 e √16 = 4. 9 + 4 = 13.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '8º ano' and nome = 'Potências e raízes'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '8º ano' and nome = 'Potências e raízes' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -807,7 +803,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Se a = 2 e b = 5, quanto vale a × b + a?', '12', '10', '17', '14', 'A', '2 × 5 + 2 = 10 + 2 = 12.'),
   ('Quanto é 4x − x?', '4', '3x', '3', '5x', 'B', '4x − 1x = 3x.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '8º ano' and nome = 'Expressões algébricas'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '8º ano' and nome = 'Expressões algébricas' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -828,7 +824,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Se Δ < 0, a equação do 2º grau:', 'não tem raízes reais', 'tem duas raízes iguais', 'tem duas raízes diferentes', 'tem infinitas raízes', 'A', 'Não existe raiz quadrada real de número negativo, então não há raízes reais.'),
   ('Resolva: x² − 9 = 0', 'x = 3', 'x = ±3', 'x = 9', 'x = ±9', 'B', 'x² = 9, então x = 3 ou x = −3.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '9º ano' and nome = 'Equações do 2º grau'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '9º ano' and nome = 'Equações do 2º grau' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -849,7 +845,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('A hipotenusa mede 13 e um cateto mede 5. O outro cateto mede:', '8', '12', '18', '10', 'B', '13² − 5² = 169 − 25 = 144, e √144 = 12.'),
   ('Em a² = b² + c², a letra "a" representa:', 'a hipotenusa', 'um cateto', 'um ângulo', 'a altura', 'A', '"a" é a hipotenusa, o lado oposto ao ângulo reto.')
 ),
-h as (select id from habilidade where disciplina = 'Matemática' and serie = '9º ano' and nome = 'Teorema de Pitágoras'),
+h as (select id from habilidade where disciplina = 'Matemática' and serie = '9º ano' and nome = 'Teorema de Pitágoras' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -870,7 +866,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Onde ficam guardados os arquivos mesmo depois de desligar o computador?', 'No armazenamento (HD ou SSD)', 'No monitor', 'No mouse', 'Na tomada', 'A', 'O HD ou SSD guarda arquivos de forma permanente, mesmo com o computador desligado.'),
   ('Qual destes é um programa (software)?', 'Teclado', 'Navegador de internet', 'Cabo USB', 'Monitor', 'B', 'Software é o programa, a parte que não dá para tocar. O navegador é um programa; os outros são peças (hardware).')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Partes do computador'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Partes do computador' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -891,7 +887,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Apareceu uma mensagem: "Você ganhou um celular! Clique aqui". O que fazer?', 'Clicar rápido', 'Desconfiar e não clicar', 'Passar seus dados', 'Mandar para todos', 'B', 'Prêmios surpresa costumam ser golpes. Não clique e mostre para um adulto.'),
   ('O que é cyberbullying?', 'Um jogo de computador', 'Ofender ou humilhar alguém pela internet', 'Um tipo de vírus', 'Uma rede social', 'B', 'Cyberbullying é a agressão feita pela internet. Se acontecer com você ou com alguém, conte a um adulto.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Segurança na internet'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '5º ano' and nome = 'Segurança na internet' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -912,7 +908,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Perceber que 2, 4, 6, 8 aumenta de 2 em 2 é identificar um:', 'Padrão', 'Vírus', 'Arquivo', 'Cabo', 'A', 'Reconhecer padrões é uma das bases do pensamento computacional.'),
   ('Um robô anda 1 casa a cada comando "frente". Para andar 3 casas, ele precisa de:', '1 comando', '2 comandos', '3 comandos', '4 comandos', 'C', 'Cada comando move 1 casa, então são 3 comandos "frente".')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Pensamento computacional'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Pensamento computacional' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -933,7 +929,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('O que acontece com um arquivo enviado para a lixeira?', 'Some para sempre na hora', 'Fica na lixeira até ela ser esvaziada', 'Vai para a internet', 'Vira outro arquivo', 'B', 'Na lixeira o arquivo ainda pode ser recuperado, até ela ser esvaziada.'),
   ('Fazer uma cópia dos arquivos importantes em outro lugar se chama:', 'Backup', 'Download', 'Bug', 'Login', 'A', 'Backup é a cópia de segurança: se o original se perder, você ainda tem a cópia.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Arquivos e pastas'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '6º ano' and nome = 'Arquivos e pastas' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -954,7 +950,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('O Wi-Fi permite:', 'Conectar à rede sem fio', 'Imprimir sem papel', 'Carregar a bateria', 'Aumentar a tela', 'A', 'Wi-Fi é uma conexão de rede sem fio, por ondas de rádio.'),
   ('O cadeado ao lado do endereço do site indica que:', 'O site é proibido', 'A conexão é protegida (criptografada)', 'O site está fechado', 'O site é pago', 'B', 'O cadeado (HTTPS) mostra que os dados trocados com o site são protegidos.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Internet e redes'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Internet e redes' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -975,7 +971,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Usar o trabalho de outra pessoa como se fosse seu é:', 'Plágio', 'Backup', 'Pesquisa', 'Download', 'A', 'Plágio é copiar sem dar crédito. Ao usar algo de alguém, cite a fonte.'),
   ('Qual atitude é mais saudável com telas?', 'Usar o celular a noite toda', 'Fazer pausas e equilibrar com outras atividades', 'Nunca sair do jogo', 'Comer sempre na frente da tela', 'B', 'Pausas, sono e outras atividades ajudam a usar a tecnologia de forma saudável.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Cidadania digital'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '7º ano' and nome = 'Cidadania digital' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -996,7 +992,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Um erro num programa é chamado de:', 'Bug', 'Byte', 'Link', 'Pixel', 'A', 'Bug é um defeito no programa. Corrigir é "depurar" (debug).'),
   ('Para achar o maior número de uma lista, um algoritmo pode:', 'Comparar os números um a um', 'Desligar o computador', 'Apagar a lista', 'Escolher sempre o primeiro', 'A', 'Comparando um a um e guardando o maior até agora, chegamos ao maior de todos.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Lógica e algoritmos'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Lógica e algoritmos' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -1017,7 +1013,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('No sistema binário, os computadores usam só os algarismos:', '0 e 1', '1 e 2', '0 a 9', 'A e B', 'A', 'Binário tem só dois algarismos: 0 e 1, como desligado e ligado.'),
   ('Os pequenos pontos que formam uma imagem na tela se chamam:', 'Pixels', 'Bytes', 'Pastas', 'Links', 'A', 'Pixel é cada pontinho colorido que forma a imagem.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Dados e informação'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '8º ano' and nome = 'Dados e informação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -1038,7 +1034,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Usar a mesma senha em todos os sites é:', 'Seguro', 'Arriscado: se uma vazar, todas as contas ficam expostas', 'Obrigatório', 'Recomendado pelos bancos', 'B', 'Senhas diferentes evitam que um vazamento abra todas as suas contas.'),
   ('Ao usar um computador público, ao terminar você deve:', 'Deixar a conta aberta', 'Sair da conta (logout)', 'Salvar a senha no navegador', 'Desligar o monitor só', 'B', 'Sair da conta impede que a próxima pessoa use o seu login.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Segurança da informação'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Segurança da informação' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h
@@ -1059,7 +1055,7 @@ with v(enunciado, a, b, c, d, correta, explicacao) as (values
   ('Qual destas é uma linguagem de programação?', 'Python', 'Excel', 'Wi-Fi', 'Pen drive', 'A', 'Python é uma linguagem de programação muito usada para aprender.'),
   ('Um texto entre aspas, como "Olá", no código é um valor do tipo:', 'Texto (string)', 'Número', 'Imagem', 'Pasta', 'A', 'Valores entre aspas são textos, chamados de strings.')
 ),
-h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Programação básica'),
+h as (select id from habilidade where disciplina = 'Tecnologia e Computação' and serie = '9º ano' and nome = 'Programação básica' and professor_id is null),
 novas as (
   insert into questao (habilidade_id, enunciado, alt_a, alt_b, alt_c, alt_d, correta, explicacao)
   select h.id, v.enunciado, v.a, v.b, v.c, v.d, v.correta, v.explicacao from v, h

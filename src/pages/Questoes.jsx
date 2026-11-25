@@ -1,14 +1,20 @@
 // Banco de questões do Mestre.
 // - Padrão: questões prontas da plataforma (todo Mestre vê, ninguém edita).
 // - Minhas: questões criadas por este Mestre (só ele vê, edita e apaga).
-// Uma questão padrão pode ser duplicada para virar uma questão própria e então editada.
+// Série, disciplina e assunto são digitados livremente (com sugestões): o Mestre pode criar
+// conteúdo para qualquer nível, não só o Ensino Fundamental. Combinações novas viram
+// "habilidades" deste Mestre; combinações que já existem são reaproveitadas.
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 import { ordenarAnos } from "../lib/util.js";
+import Chips from "../components/Chips.jsx";
 
 const LETRAS = ["A", "B", "C", "D"];
-const VAZIA = { id: null, habilidade_id: "", enunciado: "", alt_a: "", alt_b: "", alt_c: "", alt_d: "", correta: "A", explicacao: "" };
+const VAZIA = { id: null, serie: "", disciplina: "", assunto: "", enunciado: "", alt_a: "", alt_b: "", alt_c: "", alt_d: "", correta: "A", explicacao: "" };
+const limpo = (t) => (t || "").trim().replace(/\s+/g, " ");
+const igual = (a, b) => limpo(a).toLowerCase() === limpo(b).toLowerCase();
+const unicos = (lista) => [...new Set(lista.filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
 
 function Formulario({ inicial, habilidades, onSalvar, onCancelar }) {
   const [q, setQ] = useState(inicial);
@@ -16,11 +22,20 @@ function Formulario({ inicial, habilidades, onSalvar, onCancelar }) {
   const [salvando, setSalvando] = useState(false);
   const mudar = (campo) => (e) => setQ({ ...q, [campo]: e.target.value });
 
+  // Sugestões: tudo o que já existe, filtrado pelo que já foi preenchido.
+  const series = ordenarAnos(new Set(habilidades.map((h) => h.serie)));
+  const disciplinas = unicos(habilidades.filter((h) => !limpo(q.serie) || igual(h.serie, q.serie)).map((h) => h.disciplina));
+  const assuntos = unicos(habilidades
+    .filter((h) => (!limpo(q.serie) || igual(h.serie, q.serie)) && (!limpo(q.disciplina) || igual(h.disciplina, q.disciplina)))
+    .map((h) => h.nome));
+  const novo = limpo(q.serie) && limpo(q.disciplina) && limpo(q.assunto) &&
+    !habilidades.some((h) => igual(h.serie, q.serie) && igual(h.disciplina, q.disciplina) && igual(h.nome, q.assunto));
+
   async function salvar(e) {
     e.preventDefault();
     setErro("");
-    if (!q.habilidade_id) return setErro("Escolha o assunto.");
-    if (!q.enunciado.trim() || LETRAS.some((l) => !q["alt_" + l.toLowerCase()].trim())) {
+    if (!limpo(q.serie) || !limpo(q.disciplina) || !limpo(q.assunto)) return setErro("Preencha série, disciplina e assunto.");
+    if (!limpo(q.enunciado) || LETRAS.some((l) => !limpo(q["alt_" + l.toLowerCase()]))) {
       return setErro("Preencha o enunciado e as 4 alternativas.");
     }
     setSalvando(true);
@@ -32,11 +47,26 @@ function Formulario({ inicial, habilidades, onSalvar, onCancelar }) {
   return (
     <form className="card" onSubmit={salvar}>
       <h2>{q.id ? "Editar questão" : "Nova questão"}</h2>
-      <label htmlFor="q-hab">Assunto</label>
-      <select id="q-hab" value={q.habilidade_id} onChange={mudar("habilidade_id")}>
-        <option value="">Escolha...</option>
-        {habilidades.map((h) => <option key={h.id} value={h.id}>{h.serie} · {h.disciplina} · {h.nome}</option>)}
-      </select>
+      <p className="muted dica" style={{ marginBottom: 6 }}>
+        Digite ou escolha nas sugestões. Pode ser qualquer nível: “3º ano (Ensino Médio)”, “Curso de Inglês”, “Pré-vestibular”...
+      </p>
+      <div>
+        <div>
+          <label htmlFor="q-serie">Série / ano / turma</label>
+          <input id="q-serie" list="lista-series" maxLength={40} value={q.serie} onChange={mudar("serie")} placeholder="Ex.: 6º ano" />
+          <datalist id="lista-series">{series.map((x) => <option key={x} value={x} />)}</datalist>
+        </div>
+        <div>
+          <label htmlFor="q-disc">Disciplina</label>
+          <input id="q-disc" list="lista-disciplinas" maxLength={40} value={q.disciplina} onChange={mudar("disciplina")} placeholder="Ex.: Matemática" />
+          <datalist id="lista-disciplinas">{disciplinas.map((x) => <option key={x} value={x} />)}</datalist>
+        </div>
+      </div>
+      <label htmlFor="q-assunto">Assunto / matéria</label>
+      <input id="q-assunto" list="lista-assuntos" maxLength={60} value={q.assunto} onChange={mudar("assunto")} placeholder="Ex.: Frações" />
+      <datalist id="lista-assuntos">{assuntos.map((x) => <option key={x} value={x} />)}</datalist>
+      {novo && <p className="aviso-ok dica">✨ Novo assunto: será criado só para você.</p>}
+
       <label htmlFor="q-enun">Enunciado</label>
       <textarea id="q-enun" rows={3} maxLength={400} value={q.enunciado} onChange={mudar("enunciado")} />
       <p className="muted dica">Marque a bolinha da alternativa certa.</p>
@@ -68,21 +98,29 @@ export default function Questoes({ sessao }) {
   const [editando, setEditando] = useState(null);
   const [erro, setErro] = useState("");
 
+  async function carregarHabilidades() {
+    // O RLS devolve as habilidades padrão e as criadas por este Mestre.
+    const { data } = await sb.from("habilidade").select("*").order("id");
+    setHabilidades(data || []);
+    return data || [];
+  }
+
   useEffect(() => {
-    sb.from("habilidade").select("*").order("id").then(({ data }) => {
-      setHabilidades(data || []);
-      if (data?.length) setAno(ordenarAnos(new Set(data.map((h) => h.serie)))[0]);
+    carregarHabilidades().then((data) => {
+      if (data.length && !ano) setAno(ordenarAnos(new Set(data.map((h) => h.serie)))[0]);
     });
   }, []);
 
   const anos = useMemo(() => ordenarAnos(new Set(habilidades.map((h) => h.serie))), [habilidades]);
   const disciplinas = useMemo(
-    () => [...new Set(habilidades.filter((h) => h.serie === ano).map((h) => h.disciplina))].sort(),
+    () => unicos(habilidades.filter((h) => h.serie === ano).map((h) => h.disciplina)),
     [habilidades, ano]
   );
-  useEffect(() => setDisciplina(disciplinas[0] || ""), [ano, disciplinas.join("|")]);
+  useEffect(() => {
+    if (!disciplinas.includes(disciplina)) setDisciplina(disciplinas[0] || "");
+  }, [ano, disciplinas.join("|")]);
   const doFiltro = habilidades.filter((h) => h.serie === ano && h.disciplina === disciplina);
-  const nomeHab = (id) => (habilidades.find((h) => h.id === id) || {}).nome || "";
+  const habDe = (id) => habilidades.find((h) => h.id === id) || {};
 
   async function carregar() {
     if (!doFiltro.length) return setQuestoes([]);
@@ -99,14 +137,29 @@ export default function Questoes({ sessao }) {
 
   useEffect(() => { carregar(); }, [ano, disciplina, aba, habilidades.length]);
 
+  // Acha a habilidade (série + disciplina + assunto) já existente, ou cria uma deste Mestre.
+  async function habilidadePara(q) {
+    const achar = (lista) => lista.find((h) => igual(h.serie, q.serie) && igual(h.disciplina, q.disciplina) && igual(h.nome, q.assunto));
+    const existente = achar(habilidades);
+    if (existente) return existente;
+    const { data, error } = await sb.from("habilidade")
+      .insert({ serie: limpo(q.serie), disciplina: limpo(q.disciplina), nome: limpo(q.assunto), professor_id: usuario.id })
+      .select("*").single();
+    if (!error) return data;
+    // Se ela foi criada há pouco (em outra aba), recarrega a lista e usa a existente.
+    return achar(await carregarHabilidades()) || null;
+  }
+
   // Salva uma questão própria (nova, duplicada ou editada). Devolve uma mensagem se der erro.
   async function salvar(q) {
+    const h = await habilidadePara(q);
+    if (!h) return "Não deu para salvar o assunto. Tente de novo.";
     const dados = {
-      habilidade_id: Number(q.habilidade_id),
-      enunciado: q.enunciado.trim(),
-      alt_a: q.alt_a.trim(), alt_b: q.alt_b.trim(), alt_c: q.alt_c.trim(), alt_d: q.alt_d.trim(),
+      habilidade_id: h.id,
+      enunciado: limpo(q.enunciado),
+      alt_a: limpo(q.alt_a), alt_b: limpo(q.alt_b), alt_c: limpo(q.alt_c), alt_d: limpo(q.alt_d),
       correta: q.correta,
-      explicacao: (q.explicacao || "").trim() || null,
+      explicacao: limpo(q.explicacao) || null,
       professor_id: usuario.id,
     };
     const { error } = q.id
@@ -114,9 +167,10 @@ export default function Questoes({ sessao }) {
       : await sb.from("questao").insert(dados);
     if (error) return "Não deu para salvar. Tente de novo.";
     setEditando(null);
-    // Mostra a questão salva: vai para a aba "Minhas" com o ano e a disciplina dela.
-    const h = habilidades.find((x) => x.id === dados.habilidade_id);
-    if (h) { setAno(h.serie); setTimeout(() => setDisciplina(h.disciplina), 0); }
+    // Mostra a questão salva: aba "Minhas", na série e na disciplina dela.
+    await carregarHabilidades();
+    setAno(h.serie);
+    setDisciplina(h.disciplina);
     setAba("minhas");
     carregar();
     return "";
@@ -132,37 +186,32 @@ export default function Questoes({ sessao }) {
     carregar();
   }
 
+  // Abre o formulário a partir de uma questão (para editar ou duplicar).
+  const paraFormulario = (q, duplicar) => {
+    const h = habDe(q.habilidade_id);
+    return { ...q, id: duplicar ? null : q.id, serie: h.serie || "", disciplina: h.disciplina || "", assunto: h.nome || "" };
+  };
+
   return (
     <main className="largo">
       <Link to="/mestre">‹ Painel</Link>
       <h1>Questões</h1>
       <p className="muted">
-        As questões <b>padrão</b> já vêm prontas. Você também pode criar as <b>suas</b>, ou duplicar uma padrão e adaptar para a sua turma.
+        As questões <b>padrão</b> já vêm prontas. Você também pode criar as <b>suas</b>, para qualquer série, disciplina ou assunto,
+        ou duplicar uma padrão e adaptar para a sua turma.
       </p>
 
       {editando ? (
         <Formulario inicial={editando} habilidades={habilidades} onSalvar={salvar} onCancelar={() => setEditando(null)} />
       ) : (
-        <button className="btn" type="button" onClick={() => setEditando({ ...VAZIA, habilidade_id: doFiltro[0]?.id || "" })}>
+        <button className="btn" type="button" onClick={() => setEditando({ ...VAZIA, serie: ano, disciplina })}>
           + Nova questão
         </button>
       )}
 
       <div className="card">
-        <div className="filtros">
-          <div>
-            <label htmlFor="f-ano">Ano</label>
-            <select id="f-ano" value={ano} onChange={(e) => setAno(e.target.value)}>
-              {anos.map((a) => <option key={a}>{a}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="f-disc">Disciplina</label>
-            <select id="f-disc" value={disciplina} onChange={(e) => setDisciplina(e.target.value)}>
-              {disciplinas.map((d) => <option key={d}>{d}</option>)}
-            </select>
-          </div>
-        </div>
+        <Chips rotulo="Série / ano" valor={ano} onEscolher={setAno} opcoes={anos.map((a) => ({ valor: a, rotulo: a }))} />
+        <Chips rotulo="Disciplina" valor={disciplina} onEscolher={setDisciplina} opcoes={disciplinas.map((d) => ({ valor: d, rotulo: d }))} />
         <div className="abas" role="tablist">
           <button type="button" role="tab" aria-selected={aba === "minhas"} className={aba === "minhas" ? "ativa" : ""} onClick={() => setAba("minhas")}>Minhas</button>
           <button type="button" role="tab" aria-selected={aba === "padrao"} className={aba === "padrao" ? "ativa" : ""} onClick={() => setAba("padrao")}>Padrão</button>
@@ -171,12 +220,12 @@ export default function Questoes({ sessao }) {
         {questoes === null && <p className="muted">Carregando...</p>}
         {questoes && questoes.length === 0 && (
           <p className="muted">
-            {aba === "minhas" ? "Você ainda não criou questões para este ano e disciplina." : "Não há questões padrão para este ano e disciplina."}
+            {aba === "minhas" ? "Você ainda não criou questões para esta série e disciplina." : "Não há questões padrão para esta série e disciplina."}
           </p>
         )}
         {questoes && questoes.map((q) => (
           <div className="questao-item" key={q.id}>
-            <span className="selo fechada">{nomeHab(q.habilidade_id)}</span>
+            <span className="selo fechada">{habDe(q.habilidade_id).nome}</span>
             <p className="questao-enunciado">{q.enunciado}</p>
             <ol className="questao-alts" type="A">
               {LETRAS.map((l) => (
@@ -188,13 +237,12 @@ export default function Questoes({ sessao }) {
             {q.explicacao && <p className="muted dica"><b>Explicação:</b> {q.explicacao}</p>}
             <div className="linha">
               {q.professor_id ? (
-                <>
-                  <button className="btn pequeno outline" type="button" onClick={() => setEditando({ ...q, habilidade_id: String(q.habilidade_id) })}>Editar</button>
+                <span style={{ display: "flex", gap: 8 }}>
+                  <button className="btn pequeno outline" type="button" onClick={() => setEditando(paraFormulario(q, false))}>Editar</button>
                   <button className="btn pequeno perigo" type="button" onClick={() => excluir(q)}>Excluir</button>
-                </>
+                </span>
               ) : (
-                <button className="btn pequeno outline" type="button"
-                  onClick={() => setEditando({ ...q, id: null, professor_id: null, habilidade_id: String(q.habilidade_id) })}>
+                <button className="btn pequeno outline" type="button" onClick={() => setEditando(paraFormulario(q, true))}>
                   Duplicar e editar
                 </button>
               )}

@@ -21,7 +21,7 @@ function lerEmVozAlta(questao) {
 
 // questao.opcoes = [{ letra, texto }] (já embaralhadas). A letra mostrada na tela (A, B, C, D)
 // é só a posição; a letra de verdade (op.letra) é a que vai para o servidor.
-export default function Questao({ questao, resposta, eliminadas = [], desativada = false, onResponder }) {
+export default function Questao({ questao, resposta, eliminadas = [], desativada = false, revisao = false, onResponder }) {
   // Para de falar quando a questão muda ou a tela fecha.
   useEffect(() => () => {
     if (temVoz) window.speechSynthesis.cancel();
@@ -30,7 +30,10 @@ export default function Questao({ questao, resposta, eliminadas = [], desativada
   return (
     <div className="pergaminho">
       <div className="topo-questao">
-        <span className="tag-assunto">{questao.assunto}</span>
+        <span className="tags-questao">
+          <span className="tag-assunto">{questao.assunto}</span>
+          {revisao && <span className="tag-revisao" title="Esta questão já apareceu: é uma chance de acertar agora">🔁 Revisão</span>}
+        </span>
         {temVoz && (
           <button type="button" className="botao-ouvir" onClick={() => lerEmVozAlta(questao)} aria-label="Ouvir a questão">
             🔈 Ouvir

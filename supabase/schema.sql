@@ -92,6 +92,14 @@ do $$ begin
   end if;
 end $$;
 
+-- Séries, disciplinas e assuntos criados pelo Mestre (qualquer nível: Fundamental, Médio, curso livre...).
+-- habilidade.professor_id vazio = padrão (todos veem); preenchido = criado por aquele Mestre (só ele vê).
+alter table habilidade add column if not exists professor_id uuid references professor(id) on delete cascade;
+-- A regra "sem repetidos" passa a valer por dono: dois Mestres podem ter o mesmo assunto.
+alter table habilidade drop constraint if exists habilidade_unica;
+create unique index if not exists habilidade_unica_idx on habilidade
+  (lower(disciplina), lower(serie), lower(nome), coalesce(professor_id, '00000000-0000-0000-0000-000000000000'::uuid));
+
 -- Índices para deixar os relatórios rápidos (buscas por sessão e por participante).
 create index if not exists participante_sessao_idx on participante (sessao_id);
 create index if not exists resposta_participante_idx on resposta (participante_id);
@@ -112,9 +120,22 @@ drop policy if exists "professor ve a si mesmo" on professor;
 create policy "professor ve a si mesmo" on professor
   for select to authenticated using (id = auth.uid());
 
+-- Habilidades (série + disciplina + assunto): as padrão são públicas; cada Mestre vê e gerencia as próprias.
 drop policy if exists "habilidades sao publicas" on habilidade;
 create policy "habilidades sao publicas" on habilidade
-  for select to anon, authenticated using (true);
+  for select to anon using (professor_id is null);
+drop policy if exists "mestre ve habilidades" on habilidade;
+create policy "mestre ve habilidades" on habilidade
+  for select to authenticated using (professor_id is null or professor_id = auth.uid());
+drop policy if exists "mestre cria suas habilidades" on habilidade;
+create policy "mestre cria suas habilidades" on habilidade
+  for insert to authenticated with check (professor_id = auth.uid());
+drop policy if exists "mestre edita suas habilidades" on habilidade;
+create policy "mestre edita suas habilidades" on habilidade
+  for update to authenticated using (professor_id = auth.uid()) with check (professor_id = auth.uid());
+drop policy if exists "mestre apaga suas habilidades" on habilidade;
+create policy "mestre apaga suas habilidades" on habilidade
+  for delete to authenticated using (professor_id = auth.uid());
 
 -- Questões: todo Mestre vê as padrão (professor_id vazio) e as próprias.
 -- Só pode criar, editar e apagar as próprias.
@@ -190,6 +211,7 @@ language sql security definer set search_path = public as $$
   join habilidade h on h.disciplina = s.disciplina and h.serie = s.serie
   join questao q on q.habilidade_id = h.id
   where p.id = p_participante
+    and (h.professor_id is null or h.professor_id = s.professor_id)
     and (s.habilidade_id is null or h.id = s.habilidade_id)
     and (
       (q.professor_id is null and s.fonte in ('padrao', 'todas'))
@@ -378,6 +400,8 @@ grant select on habilidade to anon, authenticated;
 grant select on professor, questao, participante, resposta to authenticated;
 grant select, insert, update, delete on sessao to authenticated;
 grant insert, update, delete on questao to authenticated;
+grant insert, update, delete on habilidade to authenticated;
+grant usage on sequence habilidade_id_seq to authenticated;
 grant usage on sequence questao_id_seq to authenticated;
 grant select on v_acertos_por_aluno, v_acertos_por_assunto, v_acertos_por_questao to authenticated;
 

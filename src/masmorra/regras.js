@@ -21,12 +21,32 @@ export function novoBaralho(questoes) {
 
 export const estadoInicial = { fase: "escolha" };
 
+// Vida de cada onda, ajustada ao número de questões da sala.
+// Com muitas questões, usa a vida normal (3, 4 e 6). Com poucas, diminui, para que quem
+// acerta tudo vença sem precisar repetir nenhuma questão (cada acerto tira pelo menos 1).
+export function vidasPara(totalQuestoes) {
+  const base = ONDAS.map((o) => o.vida);
+  const cheio = base.reduce((a, b) => a + b, 0);
+  const total = Math.max(ONDAS.length, Math.min(cheio, totalQuestoes));
+  if (total === cheio) return base;
+  const f = total / cheio;
+  const v1 = Math.max(1, Math.round(base[0] * f));
+  const v2 = Math.max(1, Math.round(base[1] * f));
+  return [v1, v2, Math.max(1, total - v1 - v2)];
+}
+
+// Próxima questão. Primeiro passa por todas as questões da sala, sem repetir.
+// Quando acabam, volta só nas que o aprendiz errou (revisão); se não errou nenhuma, revisa todas.
 function proximaQuestao(jogo) {
-  const fim = jogo.indice + 1 >= jogo.baralho.length;
+  if (jogo.indice + 1 < jogo.baralho.length) {
+    return { ...jogo, indice: jogo.indice + 1, resposta: null, eliminadas: [] };
+  }
+  const erradas = jogo.questoes.filter((q) => jogo.erradas.includes(q.id));
   return {
     ...jogo,
-    baralho: fim ? novoBaralho(jogo.questoes) : jogo.baralho,
-    indice: fim ? 0 : jogo.indice + 1,
+    baralho: novoBaralho(erradas.length ? erradas : jogo.questoes),
+    indice: 0,
+    revisao: true,
     resposta: null,
     eliminadas: [],
   };
@@ -47,8 +67,11 @@ export function regras(jogo, acao) {
         classe,
         heroi: { vida: classe.vida, vidaMax: classe.vida, espada: false, escudo: false, pocoes: { ...classe.pocoes } },
         onda: 0,
-        monstroVida: ONDAS[0].vida,
+        vidas: vidasPara(acao.questoes.length),
+        monstroVida: vidasPara(acao.questoes.length)[0],
         questoes: acao.questoes,
+        erradas: [], // ids das questões erradas (e ainda não acertadas): voltam na revisão
+        revisao: false,
         baralho: novoBaralho(acao.questoes),
         indice: 0,
         resposta: null,
@@ -66,6 +89,9 @@ export function regras(jogo, acao) {
       const questao = jogo.baralho[jogo.indice];
       const { acertou, certa, explicacao } = acao.resultado;
       const historico = [...jogo.historico, { assunto: questao.assunto, acertou }];
+      const erradas = acertou
+        ? jogo.erradas.filter((id) => id !== questao.id)
+        : [...new Set([...jogo.erradas, questao.id])];
       const respostasNaOnda = jogo.respostasNaOnda + 1;
       const id = (jogo.efeito?.id || 0) + 1;
       const base = { opcao: acao.opcao, certa, explicacao };
@@ -78,6 +104,7 @@ export function regras(jogo, acao) {
         return {
           ...jogo,
           historico,
+          erradas,
           respostasNaOnda,
           sequencia,
           monstroVida: Math.max(0, jogo.monstroVida - dano),
@@ -91,6 +118,7 @@ export function regras(jogo, acao) {
       return {
         ...jogo,
         historico,
+        erradas,
         respostasNaOnda,
         sequencia: 0,
         heroi: { ...jogo.heroi, escudo: false, vida: bloqueou ? jogo.heroi.vida : jogo.heroi.vida - 1 },
@@ -140,7 +168,7 @@ export function regras(jogo, acao) {
         heroi.vida = Math.min(heroi.vidaMax, heroi.vida + 1);
       }
       const onda = jogo.onda + 1;
-      return proximaQuestao({ ...jogo, fase: "batalha", heroi, onda, monstroVida: ONDAS[onda].vida, bau: null, efeito: null, respostasNaOnda: 0 });
+      return proximaQuestao({ ...jogo, fase: "batalha", heroi, onda, monstroVida: jogo.vidas[onda], bau: null, efeito: null, respostasNaOnda: 0 });
     }
 
     case "TENTAR_DE_NOVO":
@@ -149,7 +177,7 @@ export function regras(jogo, acao) {
         ...jogo,
         fase: "batalha",
         heroi: { ...jogo.heroi, vida: jogo.heroi.vidaMax },
-        monstroVida: ONDAS[jogo.onda].vida,
+        monstroVida: jogo.vidas[jogo.onda],
         sequencia: 0,
         efeito: null,
         respostasNaOnda: 0,

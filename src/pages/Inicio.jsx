@@ -13,7 +13,7 @@ const PASSOS = [
   {
     icone: "🧙",
     titulo: "O Mestre cria a sala",
-    texto: "Escolhe o ano, a disciplina e o modo: masmorra solo ou a turma toda contra um chefão projetado na lousa.",
+    texto: "Escolhe a série, a disciplina e o assunto, vê as questões antes e decide o modo: masmorra solo ou a turma toda contra um chefão na lousa.",
   },
   {
     icone: "⚔️",
@@ -51,8 +51,8 @@ export default function Inicio() {
           </div>
           <Link className="botao-ouro" to="/masmorra">⚔️ Experimentar agora (sem cadastro)</Link>
           <div className="selos-inicio">
-            <span>📚 Português, Matemática e Tecnologia</span>
-            <span>🎒 1º ao 9º ano</span>
+            <span>📚 237 questões prontas do Ensino Fundamental</span>
+            <span>✏️ Crie para qualquer série ou assunto</span>
             <span>🔈 Questões lidas em voz alta</span>
             <span>🛡️ Grátis, sem anúncios</span>
           </div>

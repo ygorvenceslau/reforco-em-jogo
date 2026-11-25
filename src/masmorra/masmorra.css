@@ -368,3 +368,5 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .frasco.grande::after { width: 18px; height: 9px; top: -16px; }
 .pocao:disabled .frasco { filter: grayscale(.9); }
 .pocao:not(:disabled):hover .frasco { transform: translateY(-2px) rotate(-6deg); transition: transform .15s; }
+.tags-questao { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.tag-revisao { display: inline-block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #1f4f8a; background: #d6e8ff; padding: 2px 8px; border-radius: 99px; }
