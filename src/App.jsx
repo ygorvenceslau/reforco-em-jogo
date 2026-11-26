@@ -21,15 +21,16 @@ import JogarTurma from "./pages/JogarTurma.jsx";
 import Lousa from "./pages/Lousa.jsx";
 import Questoes from "./pages/Questoes.jsx";
 
-// Telas do jogo já são escuras (tema da masmorra): nelas o botão de tema não aparece.
-const TELAS_DO_JOGO = [/^\/$/, /^\/masmorra/, /^\/jogar\/(masmorra|turma)/, /\/lousa$/];
+// O botão de tema (claro/escuro) aparece só nas telas do Mestre e nas informativas.
+// As telas do jogo, a entrada do aprendiz e a lousa já têm o visual escuro da masmorra.
+const TELAS_COM_TEMA = [/^\/mestre(?!.*\/lousa$)/, /^\/diagnostico/, /^\/privacidade/];
 
 export default function App() {
   const { pathname } = useLocation();
-  const telaDoJogo = TELAS_DO_JOGO.some((r) => r.test(pathname));
+  const comTema = TELAS_COM_TEMA.some((r) => r.test(pathname));
   return (
     <>
-    {!telaDoJogo && <BotaoTema />}
+    {comTema && <BotaoTema />}
     <Routes>
       <Route path="/" element={<Inicio />} />
       <Route path="/mestre/entrar" element={<MestreEntrar />} />

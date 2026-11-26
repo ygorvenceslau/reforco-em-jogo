@@ -144,12 +144,13 @@ export default function Painel({ sessao }) {
   const nomeHabilidade = (id) => (habilidades.find((h) => h.id === id) || {}).nome || "Todos os assuntos";
 
   return (
-    <main>
+    <main className="painel">
       <p className="marca">Quizzes &amp; Masmorras</p>
       <h1>Olá, {nome || "Mestre"}!</h1>
       <p className="muted">{usuario.email}</p>
-      <Link className="btn outline" to="/mestre/questoes">📚 Questões (padrão e minhas)</Link>
+      <Link className="btn outline botao-questoes" to="/mestre/questoes">📚 Questões (padrão e minhas)</Link>
 
+      <div className="painel-grade">
       <div className="card">
         <h2>Criar sala</h2>
         <Chips rotulo="Série / ano" valor={ano} onEscolher={setAno}
@@ -255,8 +256,9 @@ export default function Painel({ sessao }) {
           </div>
         ))}
       </div>
+      </div>
 
-      <button className="btn outline" type="button" onClick={sair}>Sair</button>
+      <button className="btn outline botao-sair" type="button" onClick={sair}>Sair</button>
     </main>
   );
 }

@@ -123,3 +123,11 @@ main > .marca:first-child, main > a:first-child { margin-right: 52px; }
 .previa-lista li { line-height: 1.35; }
 .previa-lista .certa { color: var(--ok); font-weight: 800; }
 .previa-lista small { color: var(--muted); display: block; }
+
+/* Painel do Mestre: duas colunas no computador (criar sala | minhas salas) */
+main.painel { max-width: 1120px; }
+.painel-grade { display: grid; gap: 14px; }
+@media (min-width: 980px) {
+  .painel-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .painel .botao-questoes, .painel .botao-sair { max-width: 420px; }
+}

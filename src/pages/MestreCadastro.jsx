@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
+import { problemaNaSenha, REGRA_SENHA } from "../lib/util.js";
 
 export default function MestreCadastro() {
   const navegar = useNavigate();
@@ -16,7 +17,9 @@ export default function MestreCadastro() {
   async function cadastrar(e) {
     e.preventDefault();
     setErro("");
-    if (form.senha.length < 6) return setErro("A senha precisa ter pelo menos 6 caracteres.");
+    if (form.nome.trim().length < 2) return setErro("Digite o seu nome.");
+    const problema = problemaNaSenha(form.senha);
+    if (problema) return setErro(problema);
     if (form.senha !== form.senha2) return setErro("As duas senhas não são iguais.");
 
     setEnviando(true);
@@ -32,7 +35,7 @@ export default function MestreCadastro() {
       const m = error.message || "";
       if (/already registered|already exists/i.test(m)) setErro("Já existe uma conta com esse e-mail.");
       else if (/rate limit/i.test(m)) setErro("Muitas tentativas. Espere alguns minutos e tente de novo.");
-      else if (/password/i.test(m)) setErro("Senha fraca. Use pelo menos 6 caracteres.");
+      else if (/password/i.test(m)) setErro("Senha fraca. " + REGRA_SENHA);
       else setErro("Não deu para criar a conta. Tente de novo.");
       return;
     }
@@ -66,8 +69,9 @@ export default function MestreCadastro() {
         <input id="escola" maxLength={80} value={form.escola} onChange={mudar("escola")} />
         <label htmlFor="email">E-mail</label>
         <input id="email" type="email" required autoComplete="email" value={form.email} onChange={mudar("email")} />
-        <label htmlFor="senha">Senha (mínimo 6 caracteres)</label>
-        <input id="senha" type="password" required autoComplete="new-password" value={form.senha} onChange={mudar("senha")} />
+        <label htmlFor="senha">Senha</label>
+        <input id="senha" type="password" required minLength={8} autoComplete="new-password" value={form.senha} onChange={mudar("senha")} aria-describedby="regra-senha" />
+        <p id="regra-senha" className="muted dica" style={{ marginTop: -4, marginBottom: 6 }}>{REGRA_SENHA}</p>
         <label htmlFor="senha2">Repita a senha</label>
         <input id="senha2" type="password" required autoComplete="new-password" value={form.senha2} onChange={mudar("senha2")} />
         {erro && <p className="erro" role="alert">{erro}</p>}
