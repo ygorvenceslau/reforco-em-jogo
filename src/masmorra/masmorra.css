@@ -323,9 +323,9 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .inicio .pergaminho h2 { margin-bottom: 2px; }
 .inicio .pergaminho label { color: var(--tinta); }
 .inicio .pergaminho input { border-color: #d9c08a; }
-.inicio .pergaminho .btn { background: #7a5416; box-shadow: 0 4px 0 #4f360c; }
-.inicio .pergaminho .btn.outline { background: transparent; color: #7a5416; border-color: #7a5416; box-shadow: none; }
-.inicio .pergaminho .erro { color: var(--vermelho); }
+.masmorra .pergaminho .btn { background: #7a5416; box-shadow: 0 4px 0 #4f360c; }
+.masmorra .pergaminho .btn.outline { background: transparent; color: #7a5416; border-color: #7a5416; box-shadow: none; }
+.masmorra .pergaminho .erro { color: var(--vermelho); }
 .passos { display: grid; gap: 10px; }
 .passo { display: flex; gap: 14px; align-items: flex-start; background: rgba(255, 255, 255, .06); border: 1px solid #4b4170; border-radius: 14px; padding: 12px 14px; }
 .passo-icone { font-size: 30px; line-height: 1; }
@@ -340,7 +340,7 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .qr-batalha img { width: 84px; height: 84px; background: #fff; border-radius: 8px; padding: 4px; flex: none; }
 .qr-batalha span { font-size: 14px; color: #ddd4f5; }
 .qr-batalha b { color: var(--ouro); letter-spacing: 2px; }
-.inicio .link-esqueci a { color: #7a5416; }
+.masmorra .link-esqueci a { color: #7a5416; }
 
 /* ---------- Frascos de poção (CSS) ---------- */
 .frasco { --cor-liq: #ff5a6e; --cor-brilho: #ffb3bd; position: relative; display: inline-block; width: 30px; height: 34px; margin-top: 8px; }
@@ -370,3 +370,15 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .pocao:not(:disabled):hover .frasco { transform: translateY(-2px) rotate(-6deg); transition: transform .15s; }
 .tags-questao { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .tag-revisao { display: inline-block; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .8px; color: #1f4f8a; background: #d6e8ff; padding: 2px 8px; border-radius: 99px; }
+
+.mini-claro { font-size: 14px; }
+.masmorra .pergaminho .btn { font-size: 18px; }
+
+/* Lousa e demonstração do modo turma: painéis da mesma altura e chefão grande para o projetor */
+.duas-telas { align-items: stretch; }
+.duas-telas .lousa { justify-content: center; min-height: 62vh; }
+.duas-telas .lousa .chefao-grande { font-size: clamp(120px, 14vw, 210px); }
+.duas-telas .lousa .barra-vida.grande { height: 34px; }
+.duas-telas .lousa .barra-vida.grande > span { font-size: 19px; line-height: 30px; }
+.duas-telas .lousa .nome-monstro { font-size: 24px; }
+@media (max-width: 760px) { .duas-telas .lousa { min-height: 0; } }

@@ -12,11 +12,17 @@ Com o ensino integral não existe mais contraturno, então o aluno que precisa d
 
 ## Como funciona
 
-1. O Mestre cria uma conta e uma sala: escolhe ano, disciplina, assunto, de onde vêm as questões (padrão, próprias ou as duas) e o modo de jogo.
+1. O Mestre cria uma conta e uma sala: marca a série, a disciplina, o assunto, de onde vêm as questões (padrão, próprias ou as duas) e o modo de jogo. Antes de criar, vê a **prévia** das questões que a sala vai usar.
 2. O Aprendiz entra pelo celular com o código e um apelido, sem criar conta.
 3. **Masmorra solo:** cada aprendiz escolhe uma classe e enfrenta 3 ondas de monstros e um chefão. Acertar é atacar; errar tira um coração e mostra a explicação. Há poções (cura, visão, escudo) e um baú com recompensas entre as ondas.
 4. **Turma contra o chefão:** o Mestre projeta a lousa e todos atacam o mesmo chefão pelo celular. A turma vence junta, e a lousa mostra só os acertos.
-5. No relatório o Mestre vê os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%.
+5. No relatório o Mestre vê os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%, e as questões que mais confundiram a turma.
+
+Outros detalhes:
+- **Sem questões repetidas:** a vida dos monstros se ajusta ao número de questões da sala; só voltam as erradas, como "Revisão".
+- **Para qualquer nível:** o Mestre digita série, disciplina e assunto livremente (Ensino Médio, cursos, pré-vestibular...).
+- **Acessibilidade:** botão "Ouvir" lê a questão em voz alta; modo escuro nas telas do Mestre.
+- **Conta do Mestre:** cadastro com senha forte (8+ caracteres, letras e números) e "Esqueci minha senha".
 
 O site já vem com 237 questões padrão, todas com explicação: Língua Portuguesa e Matemática (1º ao 9º ano) e Tecnologia e Computação (5º ao 9º ano, seguindo os eixos da BNCC Computação: mundo digital, cultura digital e pensamento computacional). As questões ficam em `supabase/gerador/questoes.py`, que gera o `seed.sql`. O Mestre pode criar as próprias questões ou duplicar e adaptar uma padrão.
 

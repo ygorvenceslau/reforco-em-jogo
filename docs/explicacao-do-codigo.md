@@ -83,6 +83,14 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 5. A lousa (`estado_turma_mestre`) e os celulares (`estado_turma`) consultam o servidor **a cada 2 segundos**.
 6. A lousa mostra **só os acertos**, para não expor quem erra.
 
+## 7b. Recursos que deixam o jogo justo e versátil
+- **Sem repetição (`vidasPara` e `proximaQuestao` em `regras.js`):** a vida dos 3 monstros soma no máximo o número de questões da sala. Como cada acerto tira pelo menos 1 de vida, quem acerta tudo vence antes de repetir. Quando as questões acabam, só voltam as erradas, com a etiqueta "🔁 Revisão".
+- **Prévia (`Painel.jsx`):** antes de criar a sala, o Mestre vê quantas questões ela vai usar e a lista com a resposta certa. Sala sem questões não pode ser criada.
+- **Assuntos livres (`Questoes.jsx`):** série, disciplina e assunto são digitados com sugestões. Combinação nova vira uma `habilidade` do próprio Mestre (`habilidade.professor_id`), visível só para ele; combinação que já existe é reaproveitada.
+- **Escolha por toque (`components/Chips.jsx`):** botões para marcar no lugar de listas suspensas, com busca quando há muitas opções.
+- **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, letras e números, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
+- **Recuperação de senha (`EsqueciSenha.jsx` e `NovaSenha.jsx`):** o Supabase envia o link por e-mail; a mensagem é a mesma exista ou não a conta, para não revelar quem está cadastrado.
+
 ## 8. Banco de dados
 Tabelas: `professor` → `sessao` → `participante` → `resposta`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
 
@@ -108,5 +116,7 @@ create policy "professor ve questoes" on questao
 - **Uma pessoa vê os dados de outra?** Não. O RLS filtra pelo usuário logado, e o aprendiz não acessa tabelas.
 - **O aprendiz precisa de conta?** Não: código e apelido. Isso protege os dados das crianças (LGPD) e não toma tempo da aula.
 - **O modo turma é em tempo real?** Atualiza a cada 2 segundos, o que é suficiente para a sala. Dá para trocar por Supabase Realtime no futuro.
+- **Por que a mesma questão não se repete?** A vida dos monstros se ajusta ao número de questões; só voltam as erradas, como revisão.
+- **Serve só para o Ensino Fundamental?** Não. O banco padrão é do Fundamental, mas o Mestre cria questões para qualquer série ou assunto, e elas ficam visíveis só para ele.
 - **Os equipamentos não tiram o foco do estudo?** Eles ajudam, mas não substituem o acerto: sem responder certo, ninguém vence. E todo erro mostra uma explicação.
 - **Usou IA?** Sim, o Claude Code, como ferramenta de apoio. Cada parte foi testada, e eu consigo explicar o que cada arquivo faz.
