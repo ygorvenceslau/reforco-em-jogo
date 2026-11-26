@@ -1,5 +1,5 @@
 /* Visual da masmorra: pedra escura, pergaminho e ouro. Estilo cartoon, sem violência. */
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap");
+/* A fonte Cinzel é carregada no index.html, junto com a Nunito (um pedido só). */
 
 .masmorra {
   --pedra: #1f1b2e;
@@ -393,3 +393,8 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .fila-monstros figcaption { font-size: 12px; line-height: 1.25; margin-top: 2px; }
 .fila-monstros figcaption b { font-size: 13px; }
 .desfile span { display: inline-block; }
+
+/* Lousa: botão para o Mestre esconder um apelido */
+.feed li { display: flex; align-items: center; gap: 8px; }
+.ocultar-nome { margin-left: auto; font: inherit; font-size: 12px; font-weight: 700; color: #b9aedb; background: transparent; border: 1px solid #5a4f80; border-radius: 99px; padding: 1px 8px; cursor: pointer; opacity: .55; }
+.ocultar-nome:hover, .ocultar-nome:focus-visible { opacity: 1; color: #fff; border-color: #b9aedb; }

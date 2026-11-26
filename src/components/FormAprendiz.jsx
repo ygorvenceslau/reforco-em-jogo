@@ -1,8 +1,9 @@
 // Formulário de entrada do aprendiz: código da sala + apelido, sem conta.
 // Usado na tela inicial e na página /jogar.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { sb } from "../lib/supabase.js";
+import { obterSb } from "../lib/obterSb.js";
+import { apelidoImproprio } from "../lib/apelido.js";
 
 export default function FormAprendiz({ codigoInicial = "", botao = "Entrar" }) {
   const navegar = useNavigate();
@@ -11,13 +12,24 @@ export default function FormAprendiz({ codigoInicial = "", botao = "Entrar" }) {
   const [erro, setErro] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  // Já começa a baixar a conexão com o banco enquanto o aprendiz digita.
+  useEffect(() => { obterSb().catch(() => {}); }, []);
+
   async function entrar(e) {
     e.preventDefault();
     setErro("");
     if (!codigo.trim() || !nome.trim()) return setErro("Preencha o código e o seu nome.");
+    // O apelido aparece na lousa para a turma toda: palavrões e ofensas não passam.
+    if (apelidoImproprio(nome)) return setErro("Esse apelido não pode ser usado. Use seu primeiro nome ou outro apelido.");
     setEnviando(true);
     // O aprendiz não acessa tabelas: chama a função entrar_na_sessao do banco.
-    const { data, error } = await sb.rpc("entrar_na_sessao", { p_codigo: codigo.trim(), p_nome: nome.trim() });
+    let data, error;
+    try {
+      const sb = await obterSb();
+      ({ data, error } = await sb.rpc("entrar_na_sessao", { p_codigo: codigo.trim(), p_nome: nome.trim() }));
+    } catch (falha) {
+      error = falha; // não conseguiu baixar a biblioteca (sem internet)
+    }
     setEnviando(false);
     if (error) {
       const m = error.message || "";

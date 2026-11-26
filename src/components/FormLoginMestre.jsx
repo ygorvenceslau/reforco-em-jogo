@@ -2,7 +2,7 @@
 // Usado na tela inicial e na página /mestre/entrar.
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { sb } from "../lib/supabase.js";
+import { obterSb } from "../lib/obterSb.js";
 
 export default function FormLoginMestre() {
   const navegar = useNavigate();
@@ -15,7 +15,13 @@ export default function FormLoginMestre() {
     e.preventDefault();
     setErro("");
     setEnviando(true);
-    const { error } = await sb.auth.signInWithPassword({ email: email.trim(), password: senha });
+    let error;
+    try {
+      const sb = await obterSb();
+      ({ error } = await sb.auth.signInWithPassword({ email: email.trim(), password: senha }));
+    } catch (falha) {
+      error = falha; // não conseguiu baixar a biblioteca (sem internet)
+    }
     setEnviando(false);
     if (error) {
       const m = error.message || "";

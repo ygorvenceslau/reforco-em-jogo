@@ -222,7 +222,7 @@ export default function Painel({ sessao }) {
             {nova.modo === "turma" && (
               <Link className="btn" style={{ marginTop: 10 }} to={"/mestre/sessao/" + nova.id + "/lousa"}>🐉 Abrir a lousa</Link>
             )}
-            <Link className="btn outline" style={{ marginTop: 10 }} to={"/mestre/sessao/" + nova.id}>Ver relatório</Link>
+            <Link className="btn outline" style={{ marginTop: 10 }} to={"/mestre/sessao/" + nova.id}>📊 Acompanhar ao vivo</Link>
           </div>
         )}
       </div>
@@ -243,7 +243,7 @@ export default function Painel({ sessao }) {
             </p>
             <div className="linha">
               <span style={{ display: "flex", gap: 8 }}>
-                <Link className="btn pequeno" to={"/mestre/sessao/" + s.id}>Relatório</Link>
+                <Link className="btn pequeno" to={"/mestre/sessao/" + s.id}>{s.ativa ? "📊 Ao vivo" : "Relatório"}</Link>
                 {s.modo === "turma" && <Link className="btn pequeno" to={"/mestre/sessao/" + s.id + "/lousa"}>Lousa</Link>}
               </span>
               <span style={{ display: "flex", gap: 8 }}>

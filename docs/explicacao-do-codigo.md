@@ -41,13 +41,15 @@ O reforço escolar vira uma aventura: o aprendiz derrota monstros respondendo qu
 | `src/pages/JogarMasmorra.jsx` | Masmorra solo dentro da sala |
 | `src/pages/JogarTurma.jsx` | Celular do aprendiz no modo turma |
 | `src/pages/Lousa.jsx` | Lousa do Mestre no modo turma |
-| `src/pages/Relatorio.jsx` | Acertos por aprendiz e por assunto, com "Reforçar" |
+| `src/pages/Relatorio.jsx` | Relatório da sala, **ao vivo** enquanto ela está aberta: resumo, questões que mais confundiram (com a alternativa errada mais marcada e quem errou), acertos por aprendiz e por assunto |
 | `src/masmorra/regras.js` | **Regras do jogo** (ataque, crítico, dano, poções, baú, ondas) |
 | `src/masmorra/fontes.js` | De onde vêm as questões e quem corrige (protótipo ou servidor) |
 | `src/masmorra/Masmorra.jsx` | Telas da masmorra: classe, batalha, baú, derrota, vitória |
 | `src/masmorra/dados.js` | Classes, monstros, poções, recompensas e medalhas |
 | `supabase/schema.sql` | Tabelas, RLS, funções e views |
 | `supabase/seed.sql` | 237 questões padrão com explicação (gerado por `supabase/gerador/`) |
+| `src/lib/apelido.js` | Filtro de apelidos impróprios (palavrões e ofensas), usado na entrada do aprendiz e na lousa |
+| `src/lib/obterSb.js` | Busca a biblioteca do Supabase só quando ela é usada, para a tela inicial abrir mais rápido |
 | `src/masmorra/Monstro.jsx` | Desenho dos monstros em SVG: um molde por tipo (dragão, morcego, polvo, robô...), colorido com a cor do monstro e com partes animadas |
 | `src/masmorra/Efeitos.jsx` | Efeitos de ataque: corte (guerreiro), magia (mago), flecha (arqueiro) e garras (erro) |
 
@@ -90,6 +92,9 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 - **Assuntos livres (`Questoes.jsx`):** série, disciplina e assunto são digitados com sugestões. Combinação nova vira uma `habilidade` do próprio Mestre (`habilidade.professor_id`), visível só para ele; combinação que já existe é reaproveitada.
 - **Escolha por toque (`components/Chips.jsx`):** botões para marcar no lugar de listas suspensas, com busca quando há muitas opções.
 - **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, com minúscula, maiúscula e número, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
+- **Relatório ao vivo (`Relatorio.jsx`):** com a sala aberta, a tela se atualiza sozinha a cada 5 segundos (só com a aba visível, para não gastar internet à toa). O Mestre vê quantos estão respondendo agora, o acerto geral e, em cada questão com erros, quantos marcaram cada alternativa. A alternativa errada mais marcada mostra a confusão da turma. As respostas vêm da tabela `resposta`, com o nome do aprendiz (`participante!inner(...)`), e o RLS garante que o Mestre só vê as próprias salas. O texto de cada questão é buscado uma vez só e guardado.
+- **Filtro de apelidos (`lib/apelido.js`):** o apelido aparece na lousa, então palavrões e ofensas são recusados na entrada. O texto é normalizado (sem acento, `4`→`a`, `0`→`o`...) para pegar disfarces como `p0rr4`. Palavras curtas só contam sozinhas ("Cuca" passa), e as longas contam em qualquer parte do texto. Na lousa, o Mestre ainda pode clicar em "🙈 esconder", e um apelido impróprio que chegue ao banco aparece como "Um aprendiz".
+- **Site leve no celular (`App.jsx`):** as telas são baixadas só quando são abertas (`React.lazy`), e a biblioteca do Supabase vem depois da primeira tela (`obterSb.js`). O arquivo principal caiu de 587 KB para 298 KB. O Netlify manda o celular guardar os arquivos por um ano (`netlify.toml`), então a próxima visita abre quase na hora.
 - **Recuperação de senha (`EsqueciSenha.jsx` e `NovaSenha.jsx`):** o Supabase envia o link por e-mail; a mensagem é a mesma exista ou não a conta, para não revelar quem está cadastrado.
 
 ## 8. Banco de dados
@@ -120,4 +125,7 @@ create policy "professor ve questoes" on questao
 - **Por que a mesma questão não se repete?** A vida dos monstros se ajusta ao número de questões; só voltam as erradas, como revisão.
 - **Serve só para o Ensino Fundamental?** Não. O banco padrão é do Fundamental, mas o Mestre cria questões para qualquer série ou assunto, e elas ficam visíveis só para ele.
 - **Os equipamentos não tiram o foco do estudo?** Eles ajudam, mas não substituem o acerto: sem responder certo, ninguém vence. E todo erro mostra uma explicação.
+- **O professor acompanha em tempo real?** Sim. Com a sala aberta, o relatório vira um painel ao vivo, que atualiza a cada 5 segundos, mostrando quais questões a turma mais errou e qual alternativa errada mais marcou. Fica no celular ou notebook do Mestre, não na lousa, porque mostra quem errou.
+- **E se um aluno colocar um palavrão no apelido?** O site recusa na entrada (`lib/apelido.js`), e na lousa o Mestre esconde qualquer apelido com um clique.
+- **O site é pesado para o celular da escola?** Não: cada tela é baixada só quando é aberta, e a tela inicial não espera a biblioteca do banco. Numa simulação de 3G, ela abriu cerca de 30% mais rápido.
 - **Usou IA?** Sim, o Claude Code, como ferramenta de apoio. Cada parte foi testada, e eu consigo explicar o que cada arquivo faz.

@@ -10,6 +10,7 @@ import { ondasDe } from "../masmorra/dados.js";
 import { BarraVida } from "../masmorra/Questao.jsx";
 import { EfeitoAtaque } from "../masmorra/Efeitos.jsx";
 import Monstro from "../masmorra/Monstro.jsx";
+import { apelidoImproprio } from "../lib/apelido.js";
 import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
@@ -22,6 +23,8 @@ export default function Lousa() {
   const [estado, setEstado] = useState(null);
   const [erro, setErro] = useState("");
   const [qr, setQr] = useState("");
+  // Apelidos que o Mestre escondeu da lousa (só nesta tela; o relatório continua com o nome).
+  const [ocultos, setOcultos] = useState([]);
   const danoAnterior = useRef(null);
 
   useEffect(() => {
@@ -155,10 +158,22 @@ export default function Lousa() {
               )}
               <p className="rotulo">⚔️ Golpes da turma</p>
               <ul className="feed">
-                {estado.golpes.map((g) => <li key={g.id}>⚔️ {g.nome} acertou! −1</li>)}
+                {estado.golpes.map((g) => {
+                  // Apelido escondido pelo Mestre (ou impróprio) aparece como "Um aprendiz".
+                  const escondido = ocultos.includes(g.nome) || apelidoImproprio(g.nome);
+                  return (
+                    <li key={g.id}>
+                      ⚔️ {escondido ? "Um aprendiz" : g.nome} acertou! −1
+                      {!escondido && (
+                        <button type="button" className="ocultar-nome" onClick={() => setOcultos((o) => [...o, g.nome])}
+                          title="Esconder este apelido da lousa">🙈 esconder</button>
+                      )}
+                    </li>
+                  );
+                })}
                 {estado.golpes.length === 0 && <li className="vazio">A batalha começou! Respondam no celular…</li>}
               </ul>
-              <p className="mini claro">Total de acertos: {estado.dano}</p>
+              <p className="mini claro">Total de acertos: {estado.dano} · Algum apelido inadequado? Clique em “🙈 esconder”.</p>
               {vencida && (
                 <>
                   <button className="botao-ouro" type="button" onClick={comecar}>Nova batalha</button>

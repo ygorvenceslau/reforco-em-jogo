@@ -2,7 +2,7 @@
 // e já traz a entrada do Aprendiz e o login/cadastro do Mestre.
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { sb } from "../lib/supabase.js";
+import { obterSb } from "../lib/obterSb.js";
 import FormAprendiz from "../components/FormAprendiz.jsx";
 import FormLoginMestre from "../components/FormLoginMestre.jsx";
 import Monstro from "../masmorra/Monstro.jsx";
@@ -37,7 +37,12 @@ export default function Inicio() {
 
   // Se o Mestre já está conectado, a tela mostra um atalho para o painel em vez do login.
   useEffect(() => {
-    sb.auth.getSession().then(({ data }) => setMestre(data.session?.user || null));
+    let ativo = true;
+    obterSb()
+      .then((sb) => sb.auth.getSession())
+      .then(({ data }) => ativo && setMestre(data.session?.user || null))
+      .catch(() => {}); // sem internet: a tela continua com o login
+    return () => { ativo = false; };
   }, []);
 
   return (

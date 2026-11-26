@@ -16,7 +16,7 @@ Com o ensino integral não existe mais contraturno, então o aluno que precisa d
 2. O Aprendiz entra pelo celular com o código e um apelido, sem criar conta.
 3. **Masmorra solo:** cada aprendiz escolhe uma classe e enfrenta 3 ondas de monstros e um chefão. Acertar é atacar; errar tira um coração e mostra a explicação. Há poções (cura, visão, escudo) e um baú com recompensas entre as ondas.
 4. **Turma contra o chefão:** o Mestre projeta a lousa e todos atacam o mesmo chefão pelo celular. A turma vence junta, e a lousa mostra só os acertos.
-5. No relatório o Mestre vê os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%, e as questões que mais confundiram a turma.
+5. Durante a aula, o Mestre acompanha a sala **ao vivo** pelo celular: quem está respondendo, as questões que mais confundiram a turma (com a alternativa errada mais marcada e quem errou) e os acertos por aprendiz e por assunto, com "Reforçar" abaixo de 60%.
 
 Outros detalhes:
 - **Sem questões repetidas:** a vida dos monstros se ajusta ao número de questões da sala; só voltam as erradas, como "Revisão".
@@ -41,6 +41,7 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 - Cada questão só pode ser respondida uma vez por aprendiz.
 - Foi usado RLS (Row Level Security) em todas as tabelas, então cada Mestre só vê as próprias salas e aprendizes.
 - Do aprendiz é guardado só o apelido e as respostas.
+- Apelidos com palavrões ou ofensas são recusados na entrada, e na lousa o Mestre pode esconder qualquer apelido.
 - A chave que aparece no `config.js` é a chave pública do Supabase. A chave secreta não é usada no site.
 
 ## Banco de dados

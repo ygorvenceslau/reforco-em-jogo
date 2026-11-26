@@ -5,6 +5,13 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Os arquivos de assets/ têm um código no nome que muda a cada versão,
+# então o celular pode guardá-los por um ano: a próxima visita abre quase na hora.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Endereços da versão antiga do site (links já compartilhados continuam funcionando).
 [[redirects]]
   from = "/entrar.html"

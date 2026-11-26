@@ -17,7 +17,7 @@
    - quem erra lê a explicação e **não é exposto** na lousa;
    - a turma vence junta.
 6. **Masmorra solo no celular (2 min):** escolher a classe, mostrar um golpe (magia/flecha/corte), errar de propósito para mostrar a **explicação**, usar a **Poção de Visão** e o botão **🔈 Ouvir**.
-7. **Relatório (1 min):** acertos por aluno e por assunto, "Reforçar" abaixo de 60% e **"Questões que mais confundiram"**.
+7. **Sala ao vivo (1 min):** no celular do Mestre, abrir **📊 Ao vivo** da sala enquanto a turma joga. Mostrar o resumo (quem está respondendo agora), as **questões que mais confundiram** com a **alternativa errada mais marcada** e "Quem errou", e os acertos por aluno e por assunto ("Reforçar" abaixo de 60%). Explicar que essa tela não vai para o projetor, porque mostra quem errou.
 8. **Versatilidade (1 min):** tela **Questões**: 237 questões prontas (Português, Matemática e Tecnologia e Computação) e criação de questões para qualquer série ou assunto, com explicação.
 9. **Bastidores (30 s):** React no Netlify + Supabase (PostgreSQL). A resposta certa nunca vai para o celular antes da resposta; RLS garante que cada Mestre só vê os próprios dados; aluno entra só com apelido (LGPD).
 10. **Próximos passos (30 s):** comunidade de questões com moderação, turmas fixas com histórico, outros modos de jogo.
