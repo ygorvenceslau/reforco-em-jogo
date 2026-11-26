@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
+import { problemaNaSenha, REGRA_SENHA } from "../lib/util.js";
 
 export default function NovaSenha() {
   const navegar = useNavigate();
@@ -35,13 +36,15 @@ export default function NovaSenha() {
   async function salvar(e) {
     e.preventDefault();
     setErro("");
-    if (senha.length < 6) return setErro("A senha precisa ter pelo menos 6 caracteres.");
+    const problema = problemaNaSenha(senha);
+    if (problema) return setErro(problema);
     if (senha !== senha2) return setErro("As duas senhas não são iguais.");
     setSalvando(true);
     const { error } = await sb.auth.updateUser({ password: senha });
     setSalvando(false);
     if (error) {
       if (/different|same/i.test(error.message || "")) return setErro("A senha nova precisa ser diferente da antiga.");
+      if (/password/i.test(error.message || "")) return setErro("Senha fraca. " + REGRA_SENHA);
       return setErro("Não deu para trocar a senha. Peça um link novo e tente de novo.");
     }
     setEstado("trocada");
@@ -61,8 +64,9 @@ export default function NovaSenha() {
       )}
       {estado === "pronto" && (
         <form className="card" onSubmit={salvar}>
-          <label htmlFor="senha">Senha nova (mínimo 6 caracteres)</label>
+          <label htmlFor="senha">Senha nova</label>
           <input id="senha" type="password" autoComplete="new-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
+          <p className="muted dica" style={{ marginTop: -4, marginBottom: 6 }}>{REGRA_SENHA}</p>
           <label htmlFor="senha2">Repita a senha nova</label>
           <input id="senha2" type="password" autoComplete="new-password" required value={senha2} onChange={(e) => setSenha2(e.target.value)} />
           {erro && <p className="erro" role="alert">{erro}</p>}

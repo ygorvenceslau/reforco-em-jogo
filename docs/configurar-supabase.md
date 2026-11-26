@@ -60,3 +60,13 @@ O site já tem as telas (`/mestre/esqueci-senha` e `/mestre/nova-senha`). Para o
 3. (Opcional) Em **Authentication > Emails > Templates > Reset Password**, traduza o texto do e-mail para português.
 
 Enquanto o SMTP próprio não estiver ligado, dá para testar a recuperação usando o e-mail de quem é dono do projeto no Supabase.
+
+## Regras de senha (no servidor)
+O site já recusa senhas fracas (mínimo de 8 caracteres, com letras e números, sem ser só espaços).
+Mas a regra precisa valer **também no Supabase**, porque alguém pode tentar criar uma conta direto pelo servidor,
+sem passar pelo site. Em **Authentication > Sign In / Providers > Email** (o nome do menu pode variar um pouco):
+- **Minimum password length:** `8`
+- **Password requirements:** escolha a opção com **letras e números** (por exemplo, "Lowercase, uppercase letters and digits" ou "Letters and digits").
+
+Contas criadas antes dessa regra continuam entrando com a senha antiga. Se alguma tiver senha fraca, apague a conta em
+**Authentication > Users** ou use "Esqueci minha senha" para trocar.
