@@ -1,26 +1,26 @@
-# Roteiro da apresentação (cerca de 13 minutos)
+# Roteiro da apresentação (cerca de 12 minutos)
 
-## Antes (fazer um ensaio completo na véspera)
-- [ ] Site publicado no Netlify e abrindo no celular.
-- [ ] Conta da professora funcionando.
-- [ ] Notebook (professora) e celular (aluno) com internet, já com o site aberto.
-- [ ] VS Code aberto no projeto, com os arquivos da seção 9 de `docs/explicacao-do-codigo.md` em abas.
-- [ ] Uma sessão de reserva já com dados (`supabase/demo.sql`), caso a internet falhe.
-- [ ] Plano B: prints/gravação de tela do fluxo inteiro.
+## Na véspera (ensaio completo)
+- [ ] Abrir o painel do Supabase (o plano grátis pausa projetos parados; se estiver pausado, clicar em **Restore**).
+- [ ] Abrir https://reforcoemjogo.netlify.app/diagnostico, entrar como Mestre e ver **"Tudo certo!"**.
+- [ ] Notebook (projetor) e celular com internet, site já aberto nos dois.
+- [ ] Criar com antecedência uma sala de **Masmorra solo** e jogar uma vez, para o relatório ter dados.
+- [ ] Plano B: a prancha de prints e um vídeo curto do fluxo, caso a internet falhe.
 
 ## Roteiro
 1. **Problema (1 min):** com o ensino integral não há contraturno; o aluno sai da sala para o reforço e perde conteúdo.
-2. **Solução (1 min):** sessões curtas de jogo, dentro da aula, por habilidade, com relatório para a professora.
-3. **Professora cria a sessão (2 min):** login → painel → escolhe "Ortografia" → mostra o código grande no projetor.
-4. **Aluno joga (3 min):** entre pelo seu celular (e convide quem quiser da plateia) com o código e um apelido. Mostrar o acerto/erro na hora e o resultado final.
-5. **Relatório (2 min):** clicar em "Atualizar" e mostrar acertos por aluno e por assunto, e a marcação "Reforçar" (abaixo de 60%). Abrir a sessão de demonstração para mostrar uma turma maior.
-6. **Encerrar a sessão:** mostrar que um aluno novo não consegue mais entrar.
-7. **Código no VS Code (3 min):** seguir a ordem da seção 9 de `docs/explicacao-do-codigo.md`.
-8. **Bastidores (1 min):** Supabase com RLS (cada professora vê só os seus dados), resposta correta nunca vai para o celular, dados mínimos do aluno.
-9. **Próximos passos:** outros jogos, cadastro de questões pela tela, mais disciplinas e séries.
+2. **Solução (1 min):** *Quizzes & Masmorras*: o reforço vira uma aventura. O aluno derrota monstros respondendo questões, sozinho ou com a turma, e o professor (Mestre) vê quem precisa de ajuda e em quê.
+3. **Tela inicial (30 s):** "Aprenda jogando", entrada do aprendiz e do Mestre na mesma página.
+4. **Mestre cria a sala (2 min):** painel → marcar série, disciplina e assunto → mostrar a **prévia das questões** → modo **Turma contra o chefão** → **Abrir a lousa** (código e QR Code no projetor).
+5. **Turma joga (3 min):** a plateia entra pelo QR Code. Clicar em **Começar a batalha**. Mostrar:
+   - cada acerto tira vida do chefão, com o nome de quem acertou;
+   - quem erra lê a explicação e **não é exposto** na lousa;
+   - a turma vence junta.
+6. **Masmorra solo no celular (2 min):** escolher a classe, mostrar um golpe (magia/flecha/corte), errar de propósito para mostrar a **explicação**, usar a **Poção de Visão** e o botão **🔈 Ouvir**.
+7. **Relatório (1 min):** acertos por aluno e por assunto, "Reforçar" abaixo de 60% e **"Questões que mais confundiram"**.
+8. **Versatilidade (1 min):** tela **Questões**: 237 questões prontas (Português, Matemática e Tecnologia e Computação) e criação de questões para qualquer série ou assunto, com explicação.
+9. **Bastidores (30 s):** React no Netlify + Supabase (PostgreSQL). A resposta certa nunca vai para o celular antes da resposta; RLS garante que cada Mestre só vê os próprios dados; aluno entra só com apelido (LGPD).
+10. **Próximos passos (30 s):** comunidade de questões com moderação, turmas fixas com histórico, outros modos de jogo.
 
-## Apresentando sozinho
-- **Dois aparelhos:** notebook no projetor para a professora (painel e relatório) e o seu celular para o aluno. Deixe os dois já abertos no site antes de começar.
-- **Plateia participando:** mostre o código grande no projetor e convide 2 ou 3 pessoas a entrar pelo celular. O relatório fica mais interessante e a demonstração ganha vida.
-- **Ordem do código no VS Code:** veja a seção 9 de `docs/explicacao-do-codigo.md`.
-- **Se a internet cair:** use a sessão de demonstração (`supabase/demo.sql`) e os prints de reserva.
+## Perguntas prováveis
+Veja a seção 9 de `docs/explicacao-do-codigo.md`.
