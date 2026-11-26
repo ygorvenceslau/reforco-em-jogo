@@ -88,7 +88,7 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 - **Prévia (`Painel.jsx`):** antes de criar a sala, o Mestre vê quantas questões ela vai usar e a lista com a resposta certa. Sala sem questões não pode ser criada.
 - **Assuntos livres (`Questoes.jsx`):** série, disciplina e assunto são digitados com sugestões. Combinação nova vira uma `habilidade` do próprio Mestre (`habilidade.professor_id`), visível só para ele; combinação que já existe é reaproveitada.
 - **Escolha por toque (`components/Chips.jsx`):** botões para marcar no lugar de listas suspensas, com busca quando há muitas opções.
-- **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, letras e números, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
+- **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, com minúscula, maiúscula e número, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
 - **Recuperação de senha (`EsqueciSenha.jsx` e `NovaSenha.jsx`):** o Supabase envia o link por e-mail; a mensagem é a mesma exista ou não a conta, para não revelar quem está cadastrado.
 
 ## 8. Banco de dados

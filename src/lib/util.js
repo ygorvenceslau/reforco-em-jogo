@@ -18,11 +18,14 @@ export function aprendizAtual() {
 // Devolve uma mensagem explicando o problema, ou "" se a senha estiver boa.
 // O Supabase também precisa da mesma regra configurada no servidor (ver docs/configurar-supabase.md),
 // porque quem quiser pode tentar criar uma conta sem passar pelo site.
-export const REGRA_SENHA = "Mínimo de 8 caracteres, com letras e números.";
+export const REGRA_SENHA = "Mínimo de 8 caracteres, com letra maiúscula, letra minúscula e número. Ex.: Escola2026";
 export function problemaNaSenha(senha) {
   if (!senha || !senha.trim()) return "A senha não pode ser vazia nem só espaços.";
   if (senha !== senha.trim()) return "A senha não pode começar nem terminar com espaço.";
   if (senha.length < 8) return "A senha precisa ter pelo menos 8 caracteres.";
-  if (!/[A-Za-zÀ-ÿ]/.test(senha) || !/[0-9]/.test(senha)) return "A senha precisa ter letras e números.";
+  // Mesma regra configurada no Supabase: pelo menos uma minúscula, uma maiúscula e um número.
+  if (!/[a-z]/.test(senha)) return "A senha precisa ter pelo menos uma letra minúscula.";
+  if (!/[A-Z]/.test(senha)) return "A senha precisa ter pelo menos uma letra maiúscula.";
+  if (!/[0-9]/.test(senha)) return "A senha precisa ter pelo menos um número.";
   return "";
 }
