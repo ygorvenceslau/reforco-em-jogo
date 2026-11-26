@@ -9,6 +9,7 @@ import { regras, estadoInicial, resumoPorAssunto } from "./regras.js";
 import Questao, { BarraVida } from "./Questao.jsx";
 import { EfeitoAtaque, EfeitoEscudo, EfeitoGarras } from "./Efeitos.jsx";
 import { som, BotaoSom } from "./sons.jsx";
+import Monstro from "./Monstro.jsx";
 import "./masmorra.css";
 
 // Frasco de poção desenhado em CSS (cor do líquido por tipo: cura, visão, escudo).
@@ -48,8 +49,16 @@ function EscolhaClasse({ ondas, titulo, marca, prototipo, onEscolher }) {
           <li>💔 <b>Errou?</b> O monstro te acerta, e você vê a explicação da resposta.</li>
           <li>🧪 <b>Poções</b> ajudam: cura, visão (tira 2 alternativas erradas) e escudo.</li>
           <li>🎁 Entre as ondas, abra o <b>baú</b> e escolha uma recompensa.</li>
-          <li>{chefao.icone} Vença {ondas.length} ondas e desencante o <b>{chefao.nome}</b>!</li>
+          <li>👑 Vença {ondas.length} ondas e desencante o <b>{chefao.nome}</b>!</li>
         </ul>
+        <div className="fila-monstros">
+          {ondas.map((o, i) => (
+            <figure key={i} style={{ "--cor": o.cor }}>
+              <Monstro tipo={o.tipo} cor={o.cor} nome={o.nome} />
+              <figcaption>{o.chefao ? "Chefão" : "Onda " + (i + 1)}<br /><b>{o.nome}</b></figcaption>
+            </figure>
+          ))}
+        </div>
       </div>
       <h2 className="subtitulo">Escolha sua classe</h2>
       <div className="classes">
@@ -99,7 +108,7 @@ function Batalha({ jogo, ondas, enviando, erro, onResponder, onPocao, onContinua
               (efeito?.tipo === "erro" ? " atacou" : "")
             }
           >
-            {derrotado ? "✨" : onda.icone}
+            {derrotado ? "✨" : <Monstro tipo={onda.tipo} cor={onda.cor} nome={onda.nome} />}
           </div>
           <div className="sombra" />
           {(efeito?.tipo === "acerto" || efeito?.tipo === "critico") && (
@@ -231,7 +240,8 @@ function Vitoria({ jogo, ondas, prototipo, despachar }) {
       <div className="confete" aria-hidden="true">
         {["✨", "🎉", "⭐", "🎊", "✨", "⭐", "🎉"].map((c, i) => <span key={i} style={{ left: i * 14 + 4 + "%", animationDelay: i * 0.15 + "s" }}>{c}</span>)}
       </div>
-      <h1 className="titulo-masmorra centro">{chefao.icone} → ✨<br />O {chefao.nome} foi desencantado!</h1>
+      <div className="monstro vitoria-monstro" style={{ "--cor": chefao.cor }}><Monstro tipo={chefao.tipo} cor={chefao.cor} nome={chefao.nome} /></div>
+      <h1 className="titulo-masmorra centro">✨ O {chefao.nome} foi desencantado! ✨</h1>
       <div className="pergaminho centro">
         <div className="icone-enorme">{m.icone}</div>
         <h2>{m.nome}</h2>

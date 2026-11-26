@@ -1,12 +1,13 @@
 // Página de erro 404, com o tema da masmorra.
 import { Link } from "react-router-dom";
+import Monstro from "../masmorra/Monstro.jsx";
 import "../masmorra/masmorra.css";
 
 export default function NaoEncontrada() {
   return (
     <div className="masmorra">
       <div className="tela centro">
-        <div className="icone-enorme" aria-hidden="true">👻</div>
+        <div className="monstro monstro-espera" style={{ "--cor": "#d9e6ff" }} aria-hidden="true"><Monstro tipo="fantasma" cor="#d9e6ff" /></div>
         <h1 className="titulo-masmorra">Esta sala da masmorra não existe</h1>
         <p className="texto-claro">Confira o endereço. Se você tem um código de sala, entre por aqui:</p>
         <Link className="botao-ouro" to="/jogar">⚔️ Entrar numa sala</Link>

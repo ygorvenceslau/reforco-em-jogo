@@ -10,6 +10,7 @@ import { ondasDe } from "../masmorra/dados.js";
 import { novoBaralho } from "../masmorra/regras.js";
 import Questao, { BarraVida } from "../masmorra/Questao.jsx";
 import { EfeitoAtaque } from "../masmorra/Efeitos.jsx";
+import Monstro from "../masmorra/Monstro.jsx";
 import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
@@ -119,7 +120,7 @@ export default function JogarTurma() {
   } else if (!estado.iniciada) {
     conteudo = (
       <div className="pergaminho centro">
-        <div className="icone-enorme">{chefao.icone}</div>
+        <div className="monstro monstro-espera" style={{ "--cor": chefao.cor }}><Monstro tipo={chefao.tipo} cor={chefao.cor} nome={chefao.nome} /></div>
         <h2>Prepare-se, {aprendiz.nome}!</h2>
         <p>O {chefao.nome} está chegando. Olhe para a lousa: quando o Mestre começar a batalha, as questões aparecem aqui.</p>
         <p className="mini">Cada acerto seu tira 1 de vida do chefão. A turma vence junta!</p>
@@ -140,7 +141,7 @@ export default function JogarTurma() {
       <>
         <div className="arena chefao cenario-trono" style={{ "--cor": chefao.cor }}>
           <div className="palco">
-            <div className={"monstro" + (resposta?.acertou ? " levou-golpe" : "")} key={"m" + meus.total}>{chefao.icone}</div>
+            <div className={"monstro" + (resposta?.acertou ? " levou-golpe" : "")} key={"m" + meus.total}><Monstro tipo={chefao.tipo} cor={chefao.cor} nome={chefao.nome} /></div>
             <div className="sombra" />
             {resposta?.acertou && <EfeitoAtaque key={"fx" + meus.total} classe="guerreiro" />}
           </div>

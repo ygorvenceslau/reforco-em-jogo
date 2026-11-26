@@ -5,9 +5,14 @@ import { Link } from "react-router-dom";
 import { sb } from "../lib/supabase.js";
 import FormAprendiz from "../components/FormAprendiz.jsx";
 import FormLoginMestre from "../components/FormLoginMestre.jsx";
+import Monstro from "../masmorra/Monstro.jsx";
 import "../masmorra/masmorra.css";
 
-const DESFILE = ["👾", "🦇", "🐸", "🤖", "🐙", "🐉"];
+// Desfile de monstros da tela inicial (desenhos de Monstro.jsx).
+const DESFILE = [
+  ["geleca", "#b07cff"], ["morcego", "#8f7cff"], ["sapo", "#6bdc7a"],
+  ["robo", "#8fd3ff"], ["polvo", "#ff8ad1"], ["dragao", "#ff9f5e"],
+];
 
 const PASSOS = [
   {
@@ -46,7 +51,7 @@ export default function Inicio() {
           </p>
           <div className="desfile" aria-hidden="true">
             {DESFILE.map((m, i) => (
-              <span key={i} style={{ animationDelay: i * 0.25 + "s" }}>{m}</span>
+              <span key={m[0]} style={{ animationDelay: i * 0.25 + "s" }}><Monstro tipo={m[0]} cor={m[1]} tamanho="1.8em" /></span>
             ))}
           </div>
           <Link className="botao-ouro" to="/masmorra">⚔️ Experimentar agora (sem cadastro)</Link>

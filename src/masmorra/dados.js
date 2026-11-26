@@ -45,60 +45,60 @@ export const ONDAS = [
 const MONSTROS = {
   "Língua Portuguesa": [
     [
-      { nome: "Monstrinho Troca-Letras", icone: "👾", cor: "#b07cff", fala: "Hehe! Vou bagunçar suas letras!" },
-      { nome: "Sapo Soletrador", icone: "🐸", cor: "#6bdc7a", fala: "Croac! Soletre se for capaz!" },
-      { nome: "Lagartixa Come-Vírgula", icone: "🦎", cor: "#9be15d", fala: "Nhac! Comi todas as vírgulas!" },
+      { nome: "Monstrinho Troca-Letras", icone: "👾", tipo: "geleca", cor: "#b07cff", fala: "Hehe! Vou bagunçar suas letras!" },
+      { nome: "Sapo Soletrador", icone: "🐸", tipo: "sapo", cor: "#6bdc7a", fala: "Croac! Soletre se for capaz!" },
+      { nome: "Lagartixa Come-Vírgula", icone: "🦎", tipo: "lagarto", cor: "#9be15d", fala: "Nhac! Comi todas as vírgulas!" },
     ],
     [
-      { nome: "Morcego Sem-Acento", icone: "🦇", cor: "#8f7cff", fala: "Shhh... roubei todos os acentos!" },
-      { nome: "Fantasma do Ponto Final", icone: "👻", cor: "#d9e6ff", fala: "Buuu! Sumi com os pontos finais!" },
-      { nome: "Aranha da Crase", icone: "🕷️", cor: "#c9a0ff", fala: "Teci uma teia de crases!" },
+      { nome: "Morcego Sem-Acento", icone: "🦇", tipo: "morcego", cor: "#8f7cff", fala: "Shhh... roubei todos os acentos!" },
+      { nome: "Fantasma do Ponto Final", icone: "👻", tipo: "fantasma", cor: "#d9e6ff", fala: "Buuu! Sumi com os pontos finais!" },
+      { nome: "Aranha da Crase", icone: "🕷️", tipo: "aranha", cor: "#c9a0ff", fala: "Teci uma teia de crases!" },
     ],
     [
-      { nome: "Dragão da Gramática", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem sabe a língua!" },
-      { nome: "Troll do Dicionário", icone: "🧌", cor: "#a3d977", fala: "Grrr! Conheço todas as palavras!" },
-      { nome: "Dragão das Rimas", icone: "🐲", cor: "#ff9f5e", fala: "Rima comigo se tiver coragem!" },
+      { nome: "Dragão da Gramática", icone: "🐉", tipo: "dragao", cor: "#5ee07a", fala: "Só passa quem sabe a língua!" },
+      { nome: "Troll do Dicionário", icone: "🧌", tipo: "troll", cor: "#a3d977", fala: "Grrr! Conheço todas as palavras!" },
+      { nome: "Dragão das Rimas", icone: "🐲", tipo: "dragao", cor: "#ff9f5e", fala: "Rima comigo se tiver coragem!" },
     ],
   ],
   "Matemática": [
     [
-      { nome: "Monstrinho Conta-Errada", icone: "👾", cor: "#b07cff", fala: "Hehe! 2 + 2 = 5!" },
-      { nome: "Lesma da Tabuada", icone: "🐌", cor: "#ffd166", fala: "Devagar... quanto é 7 × 8?" },
-      { nome: "Caranguejo dos Sinais", icone: "🦀", cor: "#ff7b6b", fala: "Mais vira menos, menos vira mais!" },
+      { nome: "Monstrinho Conta-Errada", icone: "👾", tipo: "geleca", cor: "#b07cff", fala: "Hehe! 2 + 2 = 5!" },
+      { nome: "Lesma da Tabuada", icone: "🐌", tipo: "lesma", cor: "#ffd166", fala: "Devagar... quanto é 7 × 8?" },
+      { nome: "Caranguejo dos Sinais", icone: "🦀", tipo: "caranguejo", cor: "#ff7b6b", fala: "Mais vira menos, menos vira mais!" },
     ],
     [
-      { nome: "Polvo das Contas", icone: "🐙", cor: "#ff8ad1", fala: "Oito braços, oito contas difíceis!" },
-      { nome: "Coruja dos Problemas", icone: "🦉", cor: "#e0b07a", fala: "Huu! Problema difícil à vista!" },
-      { nome: "Lobo do Resto", icone: "🐺", cor: "#9fb4d6", fala: "Auuu! Quero o resto da divisão!" },
+      { nome: "Polvo das Contas", icone: "🐙", tipo: "polvo", cor: "#ff8ad1", fala: "Oito braços, oito contas difíceis!" },
+      { nome: "Coruja dos Problemas", icone: "🦉", tipo: "coruja", cor: "#e0b07a", fala: "Huu! Problema difícil à vista!" },
+      { nome: "Lobo do Resto", icone: "🐺", tipo: "lobo", cor: "#9fb4d6", fala: "Auuu! Quero o resto da divisão!" },
     ],
     [
-      { nome: "Dragão dos Números", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem domina os números!" },
-      { nome: "Rex da Geometria", icone: "🦖", cor: "#7be0a0", fala: "ROAR! Quantos lados tem um hexágono?" },
-      { nome: "Dragão das Equações", icone: "🐲", cor: "#ff9f5e", fala: "Descubra o x ou não passa!" },
+      { nome: "Dragão dos Números", icone: "🐉", tipo: "dragao", cor: "#5ee07a", fala: "Só passa quem domina os números!" },
+      { nome: "Rex da Geometria", icone: "🦖", tipo: "rex", cor: "#7be0a0", fala: "ROAR! Quantos lados tem um hexágono?" },
+      { nome: "Dragão das Equações", icone: "🐲", tipo: "dragao", cor: "#ff9f5e", fala: "Descubra o x ou não passa!" },
     ],
   ],
   "Tecnologia e Computação": [
     [
-      { nome: "Bug Saltitante", icone: "🐛", cor: "#9be15d", fala: "Bzzz! Entrei no seu código!" },
-      { nome: "Vírus Espirrento", icone: "🦠", cor: "#6be0c8", fala: "Atchim! Vou infectar seus arquivos!" },
-      { nome: "Pixel Fujão", icone: "👾", cor: "#b07cff", fala: "Pega o pixel se for capaz!" },
+      { nome: "Bug Saltitante", icone: "🐛", tipo: "inseto", cor: "#9be15d", fala: "Bzzz! Entrei no seu código!" },
+      { nome: "Vírus Espirrento", icone: "🦠", tipo: "virus", cor: "#6be0c8", fala: "Atchim! Vou infectar seus arquivos!" },
+      { nome: "Pixel Fujão", icone: "👾", tipo: "geleca", cor: "#b07cff", fala: "Pega o pixel se for capaz!" },
     ],
     [
-      { nome: "Robô Desconfigurado", icone: "🤖", cor: "#8fd3ff", fala: "Bip bop... erro 404!" },
-      { nome: "Cobra do Phishing", icone: "🐍", cor: "#9be15d", fala: "Ssss... clique neste link..." },
-      { nome: "Fantasma do Spam", icone: "👻", cor: "#d9e6ff", fala: "Buuu! Mil e-mails para você!" },
+      { nome: "Robô Desconfigurado", icone: "🤖", tipo: "robo", cor: "#8fd3ff", fala: "Bip bop... erro 404!" },
+      { nome: "Cobra do Phishing", icone: "🐍", tipo: "cobra", cor: "#9be15d", fala: "Ssss... clique neste link..." },
+      { nome: "Fantasma do Spam", icone: "👻", tipo: "fantasma", cor: "#d9e6ff", fala: "Buuu! Mil e-mails para você!" },
     ],
     [
-      { nome: "Dragão do Firewall", icone: "🐲", cor: "#ff9f5e", fala: "Só passa quem navega com segurança!" },
-      { nome: "Dragão Binário", icone: "🐉", cor: "#5ee07a", fala: "01001111... você decifra?" },
-      { nome: "Disco Voador do Malware", icone: "🛸", cor: "#8fd3ff", fala: "Vou abduzir suas senhas!" },
+      { nome: "Dragão do Firewall", icone: "🐲", tipo: "dragao", cor: "#ff9f5e", fala: "Só passa quem navega com segurança!" },
+      { nome: "Dragão Binário", icone: "🐉", tipo: "dragao", cor: "#5ee07a", fala: "01001111... você decifra?" },
+      { nome: "Disco Voador do Malware", icone: "🛸", tipo: "ovni", cor: "#8fd3ff", fala: "Vou abduzir suas senhas!" },
     ],
   ],
 };
 const MONSTROS_GERAIS = [
-  [{ nome: "Monstrinho Esquecido", icone: "👾", cor: "#b07cff", fala: "Hehe! Você não vai lembrar!" }],
-  [{ nome: "Morcego da Dúvida", icone: "🦇", cor: "#8f7cff", fala: "Shhh... será que é essa mesmo?" }],
-  [{ nome: "Dragão do Saber", icone: "🐉", cor: "#5ee07a", fala: "Só passa quem estudou!" }],
+  [{ nome: "Monstrinho Esquecido", icone: "👾", tipo: "geleca", cor: "#b07cff", fala: "Hehe! Você não vai lembrar!" }],
+  [{ nome: "Morcego da Dúvida", icone: "🦇", tipo: "morcego", cor: "#8f7cff", fala: "Shhh... será que é essa mesmo?" }],
+  [{ nome: "Dragão do Saber", icone: "🐉", tipo: "dragao", cor: "#5ee07a", fala: "Só passa quem estudou!" }],
 ];
 
 // Monta as 3 ondas de uma disciplina. Com sortear = true, cada onda ganha um monstro aleatório da lista

@@ -48,6 +48,7 @@ O reforço escolar vira uma aventura: o aprendiz derrota monstros respondendo qu
 | `src/masmorra/dados.js` | Classes, monstros, poções, recompensas e medalhas |
 | `supabase/schema.sql` | Tabelas, RLS, funções e views |
 | `supabase/seed.sql` | 237 questões padrão com explicação (gerado por `supabase/gerador/`) |
+| `src/masmorra/Monstro.jsx` | Desenho dos monstros em SVG: um molde por tipo (dragão, morcego, polvo, robô...), colorido com a cor do monstro e com partes animadas |
 | `src/masmorra/Efeitos.jsx` | Efeitos de ataque: corte (guerreiro), magia (mago), flecha (arqueiro) e garras (erro) |
 
 ## 5. As regras do jogo (`src/masmorra/regras.js`)
