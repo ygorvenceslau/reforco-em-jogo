@@ -131,3 +131,9 @@ main.painel { max-width: 1120px; }
   .painel-grade { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
   .painel .botao-questoes, .painel .botao-sair { max-width: 420px; }
 }
+
+/* Enquanto uma tela é baixada (App.jsx) */
+.carregando { min-height: 100vh; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; color: var(--muted, #6b6b7b); }
+.carregando.escuro { background: #1d1830; color: #b9aedb; }
+.carregando span { display: inline-block; animation: girar-carregando 1s linear infinite; }
+@keyframes girar-carregando { to { transform: rotate(360deg); } }

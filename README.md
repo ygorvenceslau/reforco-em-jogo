@@ -41,6 +41,7 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 - Cada questão só pode ser respondida uma vez por aprendiz.
 - Foi usado RLS (Row Level Security) em todas as tabelas, então cada Mestre só vê as próprias salas e aprendizes.
 - Do aprendiz é guardado só o apelido e as respostas.
+- Apelidos com palavrões ou ofensas são recusados na entrada, e na lousa o Mestre pode esconder qualquer apelido.
 - A chave que aparece no `config.js` é a chave pública do Supabase. A chave secreta não é usada no site.
 
 ## Banco de dados
