@@ -79,7 +79,7 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 1. O Mestre cria a sala em modo turma e abre a **lousa** (`Lousa.jsx`), que mostra o código grande.
 2. Os aprendizes entram e ficam esperando (`JogarTurma.jsx`).
 3. O Mestre clica em **Começar a batalha**. A função `iniciar_turma` grava a vida do chefão (5 por aprendiz, no mínimo 10) e a hora de início, com o relógio do servidor.
-4. Cada acerto vira uma linha na tabela `resposta`. O **dano** do chefão é a contagem de acertos da sala desde o início da batalha.
+4. Cada acerto vira uma linha na tabela `golpe`. O **dano** do chefão é a contagem de golpes da sala desde o início da batalha. (A tabela `resposta` só guarda a primeira resposta de cada questão, para o relatório; por isso os golpes ficam numa tabela separada.)
 5. A lousa (`estado_turma_mestre`) e os celulares (`estado_turma`) consultam o servidor **a cada 2 segundos**.
 6. A lousa mostra **só os acertos**, para não expor quem erra.
 
@@ -92,7 +92,7 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 - **Recuperação de senha (`EsqueciSenha.jsx` e `NovaSenha.jsx`):** o Supabase envia o link por e-mail; a mensagem é a mesma exista ou não a conta, para não revelar quem está cadastrado.
 
 ## 8. Banco de dados
-Tabelas: `professor` → `sessao` → `participante` → `resposta`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
+Tabelas: `professor` → `sessao` → `participante` → `resposta` e `golpe`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
 
 Colunas importantes:
 - `questao.professor_id`: vazio = questão padrão; preenchido = questão daquele Mestre.

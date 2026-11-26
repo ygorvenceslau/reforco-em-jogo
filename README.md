@@ -36,7 +36,7 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 
 ## Segurança e privacidade
 
-- O aprendiz não acessa as tabelas do banco. Ele só usa três funções: entrar na sessão, buscar as questões e responder.
+- O aprendiz não acessa as tabelas do banco. Ele só usa funções prontas: entrar na sessão, buscar as questões, responder, usar a poção de visão e ver o estado do chefão no modo turma.
 - A alternativa correta não é enviada para o celular. A correção é feita no banco, que devolve só se acertou ou errou.
 - Cada questão só pode ser respondida uma vez por aprendiz.
 - Foi usado RLS (Row Level Security) em todas as tabelas, então cada Mestre só vê as próprias salas e aprendizes.
@@ -45,8 +45,8 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 
 ## Banco de dados
 
-Tabelas: `professor`, `sessao`, `participante`, `resposta`, `habilidade` e `questao`.
-O relatório usa as views `v_acertos_por_aluno` e `v_acertos_por_assunto`.
+Tabelas: `professor`, `sessao`, `participante`, `resposta`, `golpe` (acertos do modo turma), `habilidade` e `questao`.
+O relatório usa as views `v_acertos_por_aluno`, `v_acertos_por_assunto` e `v_acertos_por_questao`.
 
 O DER e o modelo lógico estão em `docs/banco-de-dados.md`.
 
@@ -58,7 +58,10 @@ src/
   config.js          endereço do Supabase e chave pública
   lib/supabase.js    conexão com o banco
   pages/             uma tela por arquivo: Inicio, MestreEntrar, MestreCadastro,
-                     Painel, Relatorio, AprendizEntrar, Quiz, Diagnostico...
+                     Painel, Questoes, Lousa, Relatorio, AprendizEntrar,
+                     JogarMasmorra, JogarTurma, Diagnostico...
+  masmorra/          o jogo: regras, monstros, efeitos, sons e telas da batalha
+  components/        peças reaproveitadas (chips, botão de tema, formulários)
   styles.css
 supabase/
   schema.sql         tabelas, segurança, funções, views e o gatilho de cadastro
@@ -78,10 +81,10 @@ Depois é só abrir o endereço que aparecer no terminal (normalmente http://loc
 
 ## Próximos passos
 
-- Outros tipos de jogo além do quiz
-- Cadastro de questões pela tela
-- Mais disciplinas e séries
-- QR Code para entrar na sala
+- Comunidade de questões entre Mestres, com moderação
+- Turmas fixas com histórico ao longo do ano
+- Outros modos de jogo (corrida, por exemplo)
+- Mais disciplinas no banco de questões padrão
 
 ## Observação
 
