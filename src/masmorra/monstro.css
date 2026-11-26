@@ -1,0 +1,13 @@
+/* Monstros em SVG (Monstro.jsx) */
+.monstro-svg { display: block; overflow: visible; }
+.monstro-svg .mo-olho { transform-box: fill-box; transform-origin: center; animation: mo-piscar 4.2s infinite; }
+.monstro-svg .mo-geleca { transform-box: fill-box; transform-origin: 50% 100%; animation: mo-geleca 1.6s ease-in-out infinite; }
+.monstro-svg .mo-tremeluz { animation: mo-tremeluz 3s ease-in-out infinite; }
+
+@keyframes mo-piscar { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+@keyframes mo-geleca { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.05, .94); } }
+@keyframes mo-tremeluz { 0%, 100% { opacity: .95; } 50% { opacity: .7; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .monstro-svg .mo-olho, .monstro-svg .mo-geleca, .monstro-svg .mo-tremeluz { animation: none; }
+}

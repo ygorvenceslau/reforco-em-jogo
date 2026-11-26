@@ -9,6 +9,7 @@ import { sb } from "../lib/supabase.js";
 import { ondasDe } from "../masmorra/dados.js";
 import { BarraVida } from "../masmorra/Questao.jsx";
 import { EfeitoAtaque } from "../masmorra/Efeitos.jsx";
+import Monstro from "../masmorra/Monstro.jsx";
 import { som, BotaoSom } from "../masmorra/sons.jsx";
 import "../masmorra/masmorra.css";
 
@@ -120,7 +121,7 @@ export default function Lousa() {
                 </div>
               )}
             </div>
-            <div className="monstro chefao-grande">{chefao.icone}</div>
+            <div className="monstro chefao-grande" style={{ "--cor": chefao.cor }}><Monstro tipo={chefao.tipo} cor={chefao.cor} nome={chefao.nome} /></div>
             <p className="nome-monstro">{chefao.nome}</p>
             <p className="titulo-masmorra">{estado.aprendizes} aprendiz(es) na sala</p>
             <button className="botao-ouro" type="button" onClick={comecar} disabled={!sala.ativa}>
@@ -136,7 +137,7 @@ export default function Lousa() {
               <p className="rotulo">Código {sala.codigo} · {estado.aprendizes} aprendiz(es)</p>
               <div className="palco">
                 <div className={"monstro chefao-grande" + (vencida ? " desencantado" : estado.dano ? " levou-golpe" : "")} key={estado.dano}>
-                  {vencida ? "✨" : chefao.icone}
+                  {vencida ? "✨" : <Monstro tipo={chefao.tipo} cor={chefao.cor} nome={chefao.nome} />}
                 </div>
                 <div className="sombra" />
                 {estado.dano > 0 && !vencida && <EfeitoAtaque key={"fx" + estado.dano} classe="guerreiro" />}

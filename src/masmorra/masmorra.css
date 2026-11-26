@@ -382,3 +382,14 @@ a.botao-ouro { text-align: center; text-decoration: none; }
 .duas-telas .lousa .barra-vida.grande > span { font-size: 19px; line-height: 30px; }
 .duas-telas .lousa .nome-monstro { font-size: 24px; }
 @media (max-width: 760px) { .duas-telas .lousa { min-height: 0; } }
+
+/* Monstros desenhados (Monstro.jsx) nos lugares onde antes havia emoji */
+.monstro .monstro-svg { margin: 0 auto; }
+.monstro-espera { font-size: 96px; align-self: center; }
+.vitoria-monstro { font-size: 96px; align-self: center; filter: drop-shadow(0 0 18px var(--cor)) drop-shadow(0 0 30px var(--ouro)); }
+.fila-monstros { display: flex; justify-content: space-around; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(90, 60, 30, .35); }
+.fila-monstros figure { margin: 0; text-align: center; font-size: 62px; flex: 1; }
+.fila-monstros .monstro-svg { margin: 0 auto; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .35)); }
+.fila-monstros figcaption { font-size: 12px; line-height: 1.25; margin-top: 2px; }
+.fila-monstros figcaption b { font-size: 13px; }
+.desfile span { display: inline-block; }

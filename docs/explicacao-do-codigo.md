@@ -48,6 +48,7 @@ O reforço escolar vira uma aventura: o aprendiz derrota monstros respondendo qu
 | `src/masmorra/dados.js` | Classes, monstros, poções, recompensas e medalhas |
 | `supabase/schema.sql` | Tabelas, RLS, funções e views |
 | `supabase/seed.sql` | 237 questões padrão com explicação (gerado por `supabase/gerador/`) |
+| `src/masmorra/Monstro.jsx` | Desenho dos monstros em SVG: um molde por tipo (dragão, morcego, polvo, robô...), colorido com a cor do monstro e com partes animadas |
 | `src/masmorra/Efeitos.jsx` | Efeitos de ataque: corte (guerreiro), magia (mago), flecha (arqueiro) e garras (erro) |
 
 ## 5. As regras do jogo (`src/masmorra/regras.js`)
@@ -79,7 +80,7 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 1. O Mestre cria a sala em modo turma e abre a **lousa** (`Lousa.jsx`), que mostra o código grande.
 2. Os aprendizes entram e ficam esperando (`JogarTurma.jsx`).
 3. O Mestre clica em **Começar a batalha**. A função `iniciar_turma` grava a vida do chefão (5 por aprendiz, no mínimo 10) e a hora de início, com o relógio do servidor.
-4. Cada acerto vira uma linha na tabela `resposta`. O **dano** do chefão é a contagem de acertos da sala desde o início da batalha.
+4. Cada acerto vira uma linha na tabela `golpe`. O **dano** do chefão é a contagem de golpes da sala desde o início da batalha. (A tabela `resposta` só guarda a primeira resposta de cada questão, para o relatório; por isso os golpes ficam numa tabela separada.)
 5. A lousa (`estado_turma_mestre`) e os celulares (`estado_turma`) consultam o servidor **a cada 2 segundos**.
 6. A lousa mostra **só os acertos**, para não expor quem erra.
 
@@ -88,11 +89,11 @@ Assim o mesmo jogo funciona nos dois casos, e **a resposta certa só chega ao ce
 - **Prévia (`Painel.jsx`):** antes de criar a sala, o Mestre vê quantas questões ela vai usar e a lista com a resposta certa. Sala sem questões não pode ser criada.
 - **Assuntos livres (`Questoes.jsx`):** série, disciplina e assunto são digitados com sugestões. Combinação nova vira uma `habilidade` do próprio Mestre (`habilidade.professor_id`), visível só para ele; combinação que já existe é reaproveitada.
 - **Escolha por toque (`components/Chips.jsx`):** botões para marcar no lugar de listas suspensas, com busca quando há muitas opções.
-- **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, letras e números, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
+- **Senha forte (`problemaNaSenha` em `lib/util.js`):** mínimo 8 caracteres, com minúscula, maiúscula e número, sem ser só espaços. A mesma regra deve estar configurada no Supabase.
 - **Recuperação de senha (`EsqueciSenha.jsx` e `NovaSenha.jsx`):** o Supabase envia o link por e-mail; a mensagem é a mesma exista ou não a conta, para não revelar quem está cadastrado.
 
 ## 8. Banco de dados
-Tabelas: `professor` → `sessao` → `participante` → `resposta`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
+Tabelas: `professor` → `sessao` → `participante` → `resposta` e `golpe`; `habilidade` → `questao`. Diagrama em `docs/banco-de-dados.md`.
 
 Colunas importantes:
 - `questao.professor_id`: vazio = questão padrão; preenchido = questão daquele Mestre.

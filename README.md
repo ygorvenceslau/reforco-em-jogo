@@ -22,7 +22,7 @@ Outros detalhes:
 - **Sem questões repetidas:** a vida dos monstros se ajusta ao número de questões da sala; só voltam as erradas, como "Revisão".
 - **Para qualquer nível:** o Mestre digita série, disciplina e assunto livremente (Ensino Médio, cursos, pré-vestibular...).
 - **Acessibilidade:** botão "Ouvir" lê a questão em voz alta; modo escuro nas telas do Mestre.
-- **Conta do Mestre:** cadastro com senha forte (8+ caracteres, letras e números) e "Esqueci minha senha".
+- **Conta do Mestre:** cadastro com senha forte (8+ caracteres, com maiúscula, minúscula e número) e "Esqueci minha senha".
 
 O site já vem com 237 questões padrão, todas com explicação: Língua Portuguesa e Matemática (1º ao 9º ano) e Tecnologia e Computação (5º ao 9º ano, seguindo os eixos da BNCC Computação: mundo digital, cultura digital e pensamento computacional). As questões ficam em `supabase/gerador/questoes.py`, que gera o `seed.sql`. O Mestre pode criar as próprias questões ou duplicar e adaptar uma padrão.
 
@@ -36,7 +36,7 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 
 ## Segurança e privacidade
 
-- O aprendiz não acessa as tabelas do banco. Ele só usa três funções: entrar na sessão, buscar as questões e responder.
+- O aprendiz não acessa as tabelas do banco. Ele só usa funções prontas: entrar na sessão, buscar as questões, responder, usar a poção de visão e ver o estado do chefão no modo turma.
 - A alternativa correta não é enviada para o celular. A correção é feita no banco, que devolve só se acertou ou errou.
 - Cada questão só pode ser respondida uma vez por aprendiz.
 - Foi usado RLS (Row Level Security) em todas as tabelas, então cada Mestre só vê as próprias salas e aprendizes.
@@ -45,8 +45,8 @@ Protótipo sem login: `/masmorra` (solo) e `/masmorra/turma` (demonstração do 
 
 ## Banco de dados
 
-Tabelas: `professor`, `sessao`, `participante`, `resposta`, `habilidade` e `questao`.
-O relatório usa as views `v_acertos_por_aluno` e `v_acertos_por_assunto`.
+Tabelas: `professor`, `sessao`, `participante`, `resposta`, `golpe` (acertos do modo turma), `habilidade` e `questao`.
+O relatório usa as views `v_acertos_por_aluno`, `v_acertos_por_assunto` e `v_acertos_por_questao`.
 
 O DER e o modelo lógico estão em `docs/banco-de-dados.md`.
 
@@ -58,7 +58,10 @@ src/
   config.js          endereço do Supabase e chave pública
   lib/supabase.js    conexão com o banco
   pages/             uma tela por arquivo: Inicio, MestreEntrar, MestreCadastro,
-                     Painel, Relatorio, AprendizEntrar, Quiz, Diagnostico...
+                     Painel, Questoes, Lousa, Relatorio, AprendizEntrar,
+                     JogarMasmorra, JogarTurma, Diagnostico...
+  masmorra/          o jogo: regras, monstros, efeitos, sons e telas da batalha
+  components/        peças reaproveitadas (chips, botão de tema, formulários)
   styles.css
 supabase/
   schema.sql         tabelas, segurança, funções, views e o gatilho de cadastro
@@ -78,10 +81,10 @@ Depois é só abrir o endereço que aparecer no terminal (normalmente http://loc
 
 ## Próximos passos
 
-- Outros tipos de jogo além do quiz
-- Cadastro de questões pela tela
-- Mais disciplinas e séries
-- QR Code para entrar na sala
+- Comunidade de questões entre Mestres, com moderação
+- Turmas fixas com histórico ao longo do ano
+- Outros modos de jogo (corrida, por exemplo)
+- Mais disciplinas no banco de questões padrão
 
 ## Observação
 

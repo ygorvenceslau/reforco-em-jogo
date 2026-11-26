@@ -8,6 +8,7 @@ import { COLEGAS } from "./dados.js";
 import { novoBaralho } from "./regras.js";
 import { questoesLocais } from "./fontes.js";
 import Questao from "./Questao.jsx";
+import Monstro from "./Monstro.jsx";
 import "./masmorra.css";
 
 const VIDA_CHEFAO = 25;
@@ -91,7 +92,7 @@ export default function ModoTurma() {
           <section className="lousa" aria-label="Lousa projetada">
             <p className="rotulo">📽️ Lousa</p>
             <div className={"monstro chefao-grande" + (vida <= 0 ? " desencantado" : "")} key={golpes[0]?.id}>
-              {vida <= 0 ? "✨" : "🐉"}
+              {vida <= 0 ? "✨" : <Monstro tipo="dragao" cor="#5ee07a" nome="Dragão da Gramática" />}
             </div>
             <p className="nome-monstro">Dragão da Gramática</p>
             <div className="barra-vida grande">
